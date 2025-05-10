@@ -181,6 +181,11 @@ jobs:
           curl -fsSL https://get.docker.com -o get-docker.sh
           sudo sh get-docker.sh
 
+          # AWS
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+
 
 
       - name: Inference test
@@ -201,9 +206,14 @@ jobs:
           cd K8SDeploy/eks-cluster-config || true
           eksctl create cluster -f eks-cluster.yaml
 
+      - name: Configure kubectl
+        run: aws eks update-kubeconfig --region ap-south-1 --name my-cluster
+
       - name: Kubernetes Setup
         continue-on-error: true
         run: |        
+          # get inside the dir
+          cd K8SDeploy/eks-cluster-config || true
 
           kubectl delete -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml || true
 
@@ -292,6 +302,9 @@ jobs:
       - name: Inference imagenet
         continue-on-error: true
         run: |
+          # get inside the dir
+          cd K8SDeploy/eks-cluster-config || true
+
           kubectl apply -f imagenet-classifier-1.yml
           # Pause
           sleep 5
@@ -307,6 +320,10 @@ jobs:
       - name: Delete Entire Stack
         continue-on-error: true
         run: |
+          # get inside the dir
+          cd K8SDeploy/eks-cluster-config || true
+
+          # delete cluster
           eksctl delete cluster -f eks-cluster.yaml --disable-nodegroup-eviction
 
   #----------------------------------------
