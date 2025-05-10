@@ -184,6 +184,10 @@ jobs:
       - name: Inference test
         run: |
           # Inference setup
+          ls -la
+
+          # get inside the dir
+          cd K8SDeploy/eks-cluster-config || true
           eksctl create cluster -f eks-cluster.yaml
 
           kubectl delete -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
