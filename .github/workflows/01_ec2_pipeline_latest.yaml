@@ -181,13 +181,21 @@ jobs:
           curl -fsSL https://get.docker.com -o get-docker.sh
           sudo sh get-docker.sh
 
-          # ssh needed for eksctl to setup cluster config
-          ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -N ""
+
 
       - name: Inference test
         run: |
           # Inference setup
+          # ssh needed for eksctl to setup cluster config
+          yes | ssh-keygen -t rsa -f ~/.ssh/id_rsa  -N ""
+
+          # ls ssh place
+          ls ~/.ssh/
+
+          # ls current folder
           ls -la
+
+
 
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
