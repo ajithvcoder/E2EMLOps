@@ -217,10 +217,10 @@ jobs:
           cd K8SDeploy/eks-cluster-config || true
 
           kubectl delete -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml --validate=false || true
-
+          sleep 5
           kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml || true
 
-
+          sleep 5
           kubectl patch deployment metrics-server -n kube-system --type='json' -p='[
             {
               "op": "add",
@@ -249,32 +249,38 @@ jobs:
           #### KNative
 
           kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.16.0/serving-crds.yaml
-
+          sleep 5
           kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.16.0/serving-core.yaml
 
           # Pause
-          sleep 5
+          sleep 20
 
           #### ISTIO
 
           kubectl apply -f https://github.com/knative/net-istio/releases/download/knative-v1.16.0/istio.yaml
-
+          sleep 5
           kubectl apply -f https://github.com/knative/net-istio/releases/download/knative-v1.16.0/net-istio.yaml
 
           # Pause
-          sleep 5
+          sleep 20
 
           kubectl patch configmap/config-domain \
                 --namespace knative-serving \
                 --type merge \
                 --patch '{"data":{"emlo.tsai":""}}'
-
-          kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.16.0/serving-hpa.yaml
-
-          kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.2/cert-manager.yaml
-
-          # Pause
           sleep 5
+          kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.16.0/serving-hpa.yaml
+          sleep 5
+          kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.2/cert-manager.yaml
+          sleep 5
+          # Pause
+          sleep 20
+
+      - name: KNative Serving
+        continue-on-error: true
+        run: |  
+          # get inside the dir
+          cd K8SDeploy/eks-cluster-config || true
 
           #### Knative serving
 
@@ -283,14 +289,14 @@ jobs:
           kubectl apply --server-side -f https://github.com/kserve/kserve/releases/download/v0.14.1/kserve.yaml
 
           # Pause
-          sleep 3
+          sleep 10
 
           kubectl get all -n kserve
 
           kubectl apply --server-side -f https://github.com/kserve/kserve/releases/download/v0.14.1/kserve-cluster-resources.yaml
 
           # Pause
-          sleep 5
+          sleep 20
 
           eksctl create iamserviceaccount --cluster=basic-cluster --name=s3-read-only --attach-policy-arn=arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess  --override-existing-serviceaccounts --region ap-south-1 --approve
 
@@ -298,7 +304,7 @@ jobs:
           kubectl patch serviceaccount s3-read-only -p '{"secrets": [{"name": "s3-secret"}]}'
 
           # Pause
-          sleep 2
+          sleep 10
 
       - name: Inference imagenet
         continue-on-error: true
