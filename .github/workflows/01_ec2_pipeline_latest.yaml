@@ -344,7 +344,7 @@ jobs:
 
           sleep 250
 
-          kubectl delete -f sports-classifier.yml
+          # kubectl delete -f sports-classifier.yml
 
       - name: Delete Entire Stack
         continue-on-error: true
@@ -353,30 +353,30 @@ jobs:
           cd K8SDeploy/eks-cluster-config || true
 
           # delete cluster
-          eksctl delete cluster -f eks-cluster.yaml --disable-nodegroup-eviction
+          # eksctl delete cluster -f eks-cluster.yaml --disable-nodegroup-eviction
 
   #----------------------------------------
   # JOB 4: Stop EC2 runner after completion
   #----------------------------------------
-  stop-runner:
-    name: Stop self-hosted EC2 runner
-    needs:
-      - launch-runner
-      - do-the-job
-    runs-on: ubuntu-latest
-    if: ${{ always() }}
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+  # stop-runner:
+  #   name: Stop self-hosted EC2 runner
+  #   needs:
+  #     - launch-runner
+  #     - do-the-job
+  #   runs-on: ubuntu-latest
+  #   if: ${{ always() }}
+  #   steps:
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: ${{ secrets.AWS_REGION }}
           
-      - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2.3.9
-        with:
-          mode: stop
-          github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          label: ${{ needs.launch-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.launch-runner.outputs.ec2-instance-id }}
+  #     - name: Stop EC2 runner
+  #       uses: machulav/ec2-github-runner@v2.3.9
+  #       with:
+  #         mode: stop
+  #         github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+  #         label: ${{ needs.launch-runner.outputs.label }}
+  #         ec2-instance-id: ${{ needs.launch-runner.outputs.ec2-instance-id }}
