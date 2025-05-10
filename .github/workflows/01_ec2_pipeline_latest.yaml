@@ -161,7 +161,6 @@ jobs:
           echo "commit_id=${{ needs.launch-runner.outputs.commit_id }}" >> $GITHUB_OUTPUT
 
       - name: Setup installations
-        id: get_commit_id_ec2
         run: |
           # Assumed git actions checks out the repo and gets inside it
           cd src/eks-cluster-config
