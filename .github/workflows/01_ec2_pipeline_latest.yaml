@@ -142,10 +142,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Install requirements
-        run: |
-          pip install -r requirements.cpu.txt
-          pip install pyopenssl --upgrade
+      # - name: Install requirements
+      #   run: |
+      #     pip install -r requirements.cpu.txt
+      #     pip install pyopenssl --upgrade
 
       # un comment after debugging
       # - name: Setup dvc
@@ -199,7 +199,7 @@ jobs:
 
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
-          eksctl create cluster -f eks-cluster.yaml
+          eksctl create cluster -f eks-cluster.yaml --ssh-public-key /root/.ssh/id_rsa.pub
 
           
 
