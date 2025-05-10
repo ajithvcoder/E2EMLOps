@@ -207,7 +207,8 @@ jobs:
           eksctl create cluster -f eks-cluster.yaml
 
       - name: Configure kubectl
-        run: aws eks update-kubeconfig --region ap-south-1 --name my-cluster
+        continue-on-error: true
+        run: aws eks update-kubeconfig --region ap-south-1 --name basic-cluster
 
       - name: Kubernetes Setup
         continue-on-error: true
@@ -215,7 +216,7 @@ jobs:
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
 
-          kubectl delete -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml || true
+          kubectl delete -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml --validate=false || true
 
           kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml || true
 
