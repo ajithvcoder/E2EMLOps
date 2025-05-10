@@ -199,7 +199,7 @@ jobs:
 
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
-          eksctl create cluster -f eks-cluster.yaml --ssh-public-key /root/.ssh/id_rsa.pub
+          eksctl create cluster -f eks-cluster.yaml
 
           
 
