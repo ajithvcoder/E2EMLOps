@@ -327,17 +327,24 @@ jobs:
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
 
-          kubectl apply -f imagenet-classifier-1.yml
+          kubectl apply -f sports-classifier.yml
           # Pause
-          sleep 5
+          sleep 15
 
           kubectl get isvc
 
           kubectl get svc -n istio-system
 
-          sleep 200
+          # Pause
+          sleep 25
 
-          kubectl delete -f imagenet-classifier.yml
+          kubectl get isvc
+
+          kubectl get svc -n istio-system
+
+          sleep 250
+
+          kubectl delete -f sports-classifier.yml
 
       - name: Delete Entire Stack
         continue-on-error: true
