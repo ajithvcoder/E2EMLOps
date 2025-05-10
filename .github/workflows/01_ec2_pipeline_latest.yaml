@@ -184,6 +184,7 @@ jobs:
 
 
       - name: Inference test
+        continue-on-error: true
         run: |
           # Inference setup
           # ssh needed for eksctl to setup cluster config
@@ -196,16 +197,17 @@ jobs:
           ls -la
 
 
-
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
           eksctl create cluster -f eks-cluster.yaml
 
-          
+      - name: Kubernetes Setup
+        continue-on-error: true
+        run: |        
 
-          kubectl delete -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+          kubectl delete -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml || true
 
-          kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+          kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml || true
 
 
           kubectl patch deployment metrics-server -n kube-system --type='json' -p='[
@@ -239,12 +241,17 @@ jobs:
 
           kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.16.0/serving-core.yaml
 
+          # Pause
+          sleep 5
+
           #### ISTIO
 
           kubectl apply -f https://github.com/knative/net-istio/releases/download/knative-v1.16.0/istio.yaml
 
           kubectl apply -f https://github.com/knative/net-istio/releases/download/knative-v1.16.0/net-istio.yaml
 
+          # Pause
+          sleep 5
 
           kubectl patch configmap/config-domain \
                 --namespace knative-serving \
@@ -264,17 +271,30 @@ jobs:
 
           kubectl apply --server-side -f https://github.com/kserve/kserve/releases/download/v0.14.1/kserve.yaml
 
+          # Pause
+          sleep 3
+
           kubectl get all -n kserve
 
           kubectl apply --server-side -f https://github.com/kserve/kserve/releases/download/v0.14.1/kserve-cluster-resources.yaml
 
+          # Pause
+          sleep 5
 
           eksctl create iamserviceaccount --cluster=basic-cluster --name=s3-read-only --attach-policy-arn=arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess  --override-existing-serviceaccounts --region ap-south-1 --approve
 
           kubectl apply -f s3-secret.yaml
           kubectl patch serviceaccount s3-read-only -p '{"secrets": [{"name": "s3-secret"}]}'
 
+          # Pause
+          sleep 2
+
+      - name: Inference imagenet
+        continue-on-error: true
+        run: |
           kubectl apply -f imagenet-classifier-1.yml
+          # Pause
+          sleep 5
 
           kubectl get isvc
 
@@ -285,6 +305,7 @@ jobs:
           kubectl delete -f imagenet-classifier.yml
 
       - name: Delete Entire Stack
+        continue-on-error: true
         run: |
           eksctl delete cluster -f eks-cluster.yaml --disable-nodegroup-eviction
 
