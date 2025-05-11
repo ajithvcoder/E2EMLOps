@@ -230,12 +230,12 @@ jobs:
 
       - name: Configure AWS manually
         run: |
-          mkdir -p ~/.aws
-          echo "[default]" > ~/.aws/credentials
-          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
-          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
-          echo "[default]" > ~/.aws/config
-          echo "region = ap-south-1" >> ~/.aws/config
+          sudo mkdir -p ~/.aws
+          echo "[default]" | sudo tee ~/.aws/credentials
+          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" | sudo tee -a ~/.aws/credentials
+          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" | sudo tee -a ~/.aws/credentials
+          echo "[default]" | sudo tee ~/.aws/config
+          echo "region = ap-south-1" | sudo tee -a ~/.aws/config
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -535,10 +535,16 @@ jobs:
           fi
           sleep 10
 
+      - name: Configure kubectl
+        continue-on-error: true
+        run: aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-3
+
       - name: ArgoCD Setup
         continue-on-error: true
         run: |
           aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-3
+          # get inside the dir
+          cd K8SDeploy/eks-cluster-config || true
           sleep 5
           kubectl create namespace argocd
           sleep 2
@@ -557,6 +563,35 @@ jobs:
           python3 utils/generate_s3_secret.py
           sleep 5
           ls argo-apps
+
+      - name: Configure AWS manually
+        run: |
+          sudo mkdir -p ~/.aws
+          echo "[default]" | sudo tee ~/.aws/credentials
+          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" | sudo tee -a ~/.aws/credentials
+          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" | sudo tee -a ~/.aws/credentials
+          echo "[default]" | sudo tee ~/.aws/config
+          echo "region = ap-south-1" | sudo tee -a ~/.aws/config
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Configure AWS as root
+        run: |
+          sudo mkdir -p /root/.aws
+          echo "[default]" | sudo tee /root/.aws/credentials
+          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" | sudo tee -a /root/.aws/credentials
+          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" | sudo tee -a /root/.aws/credentials
+
+          echo "[default]" | sudo tee /root/.aws/config
+          echo "region = ap-south-1" | sudo tee -a /root/.aws/config
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Configure kubectl
+        continue-on-error: true
+        run: aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-3
 
       - name: ArgoCD Deployment
         working-directory: emlo4-session-18-ajithvcoder-canary-argocd-kserve
