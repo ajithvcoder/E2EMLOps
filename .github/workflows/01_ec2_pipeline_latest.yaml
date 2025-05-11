@@ -335,6 +335,7 @@ jobs:
 
       - name: Inference imagenet
         continue-on-error: true
+        id: get-url
         run: |
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
@@ -363,12 +364,16 @@ jobs:
 
           # kubectl delete -f sports-classifier.yml
 
-      - name: Get LoadBalancer URL
-        id: get-url
-        run: |
           url=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
           # url=a28873898792898292782787387387-269881018.ap-south-1.elb.amazonaws.com
           echo "url=$url" >> $GITHUB_OUTPUT
+
+      # - name: Get LoadBalancer URL
+      #   id: get-url
+      #   run: |
+      #     url=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+      #     # url=a28873898792898292782787387387-269881018.ap-south-1.elb.amazonaws.com
+      #     echo "url=$url" >> $GITHUB_OUTPUT
 
       # 2. Checkout Repo B (separate folder)
       # https://github.com/ajithvcoder/emlo4-session-18-ajithvcoder-canary-argocd-kserve.git
