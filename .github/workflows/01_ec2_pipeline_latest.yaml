@@ -256,14 +256,14 @@ jobs:
 
       - name: Configure kubectl
         continue-on-error: true
-        run: aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-6
+        run: aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-7
 
       - name: Kubernetes Setup
         continue-on-error: true
         run: |        
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-6
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-7
 
           kubectl delete -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml --validate=false || true
           sleep 5
@@ -330,7 +330,7 @@ jobs:
         run: |  
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-6
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-7
 
           #### Knative serving
 
@@ -358,7 +358,7 @@ jobs:
           # Pause
           sleep 30
 
-          eksctl create iamserviceaccount --cluster=basic-cluster-6 --name=s3-read-only --attach-policy-arn=arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess  --override-existing-serviceaccounts --region ap-south-1 --approve
+          eksctl create iamserviceaccount --cluster=basic-cluster-7 --name=s3-read-only --attach-policy-arn=arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess  --override-existing-serviceaccounts --region ap-south-1 --approve
 
           # Pause
           sleep 3
@@ -374,7 +374,7 @@ jobs:
       - name: Dashboard, ALB, Charts
         continue-on-error: true
         run: |
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-6
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-7
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
 
@@ -386,7 +386,7 @@ jobs:
           sleep 5
           # ALB
           eksctl create iamserviceaccount \
-              --cluster=basic-cluster-6 \
+              --cluster=basic-cluster-7 \
               --namespace=kube-system \
               --name=aws-load-balancer-controller \
               --attach-policy-arn=arn:aws:iam::306093656765:policy/AWSLoadBalancerControllerIAMPolicy \
@@ -398,14 +398,14 @@ jobs:
           helm repo add eks https://aws.github.io/eks-charts
           helm repo update
           sleep 5
-          helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=basic-cluster-6 --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller
+          helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=basic-cluster-7 --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller
 
       - name: Load URL
         id: get-url
         continue-on-error: true
         run: |
 
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-6
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-7
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
           sleep 20
@@ -418,7 +418,7 @@ jobs:
 
       - name: Configure kubectl
         continue-on-error: true
-        run: aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-6
+        run: aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-7
 
       - name: Prometheus
         continue-on-error: true
@@ -427,13 +427,20 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          sleep 20
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-6
-          sleep 20
+          # Verify AWS credentials are working
+          aws sts get-caller-identity || true
 
+          # Explicitly set KUBECONFIG to ensure we're using the right config
+          export KUBECONFIG=/root/.kube/config
+          
+          # Update kubeconfig and force it to write to the file
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-7 --kubeconfig $KUBECONFIG || true
 
+          # Verify the config has the correct server
+          kubectl config view --minify | grep server
+          
           # Wait until the EKS API server is reachable
-          for i in {1..30}; do
+          for i in {1..15}; do
             if kubectl get nodes; then
               echo "EKS cluster is ready."
               break
@@ -441,6 +448,20 @@ jobs:
             echo "Waiting for EKS API server..."
             sleep 10
           done
+
+          # Get cluster endpoint
+          CLUSTER_ENDPOINT=$(aws eks describe-cluster --name basic-cluster-7 --region ap-south-1 --query "cluster.endpoint" --output text)
+          echo "Cluster endpoint: $CLUSTER_ENDPOINT"
+          
+          # Update kubeconfig with explicit server
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-7
+          
+          # Manually verify/patch the config if needed
+          kubectl config set-cluster basic-cluster-7 --server=$CLUSTER_ENDPOINT
+
+          cat ~/.kube/config || true
+
+          cat /root/.kube/config || true
 
           # check 1
           kubectl get nodes
@@ -477,7 +498,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-6
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-7
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
           sleep 5
@@ -568,13 +589,13 @@ jobs:
 
       - name: Configure kubectl
         continue-on-error: true
-        run: aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-6
+        run: aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-7
 
       - name: ArgoCD Setup
         continue-on-error: true
         run: |
           export HOME=/root 
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-6
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-7
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
           sleep 5
@@ -623,7 +644,7 @@ jobs:
 
       - name: Configure kubectl
         continue-on-error: true
-        run: aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-6
+        run: aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-7
 
       - name: ArgoCD Deployment
         # working-directory: emlo4-session-18-ajithvcoder-canary-argocd-kserve
@@ -634,7 +655,7 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
           sleep 20
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-6
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-7
           sleep 20
           # Wait until the EKS API server is reachable
           for i in {1..30}; do
