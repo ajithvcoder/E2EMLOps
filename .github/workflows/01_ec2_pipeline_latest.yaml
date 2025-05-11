@@ -183,8 +183,8 @@ jobs:
       - name: Commit & push to Repo B
         working-directory: emlo4-session-18-ajithvcoder-canary-argocd-kserve
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git add .
           if git diff --cached --quiet; then
