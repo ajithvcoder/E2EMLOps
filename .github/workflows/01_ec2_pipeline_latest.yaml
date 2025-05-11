@@ -208,6 +208,7 @@ jobs:
           sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
           # rm argocd-linux-amd64
 
+
       - name: Setup Cluster
         continue-on-error: true
         run: |
@@ -226,9 +227,34 @@ jobs:
           cd K8SDeploy/eks-cluster-config || true
           eksctl create cluster -f eks-cluster.yaml
 
+
+      - name: Configure AWS manually
+        run: |
+          mkdir -p ~/.aws
+          echo "[default]" > ~/.aws/credentials
+          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
+          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
+          echo "[default]" > ~/.aws/config
+          echo "region = ap-south-1" >> ~/.aws/config
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Configure AWS manually in root
+        run: |
+          mkdir -p /root/.aws
+          echo "[default]" > /root/.aws/credentials
+          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> /root/.aws/credentials
+          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> /root/.aws/credentials
+          echo "[default]" > /root/.aws/config
+          echo "region = ap-south-1" >> /root/.aws/config
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
       - name: Configure kubectl
         continue-on-error: true
-        run: aws eks update-kubeconfig --region ap-south-1 --name basic-cluster
+        run: aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-3
 
       - name: Kubernetes Setup
         continue-on-error: true
@@ -328,7 +354,7 @@ jobs:
           # Pause
           sleep 30
 
-          eksctl create iamserviceaccount --cluster=basic-cluster --name=s3-read-only --attach-policy-arn=arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess  --override-existing-serviceaccounts --region ap-south-1 --approve
+          eksctl create iamserviceaccount --cluster=basic-cluster-3 --name=s3-read-only --attach-policy-arn=arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess  --override-existing-serviceaccounts --region ap-south-1 --approve
 
           # Pause
           sleep 3
@@ -344,6 +370,10 @@ jobs:
       - name: Dashboard, ALB, Charts
         continue-on-error: true
         run: |
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-3
+          # get inside the dir
+          cd K8SDeploy/eks-cluster-config || true
+
           # Kubernetes Dashboard
           helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
           helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
@@ -352,7 +382,7 @@ jobs:
           sleep 5
           # ALB
           eksctl create iamserviceaccount \
-              --cluster=basic-cluster \
+              --cluster=basic-cluster-3 \
               --namespace=kube-system \
               --name=aws-load-balancer-controller \
               --attach-policy-arn=arn:aws:iam::306093656765:policy/AWSLoadBalancerControllerIAMPolicy \
@@ -364,14 +394,16 @@ jobs:
           helm repo add eks https://aws.github.io/eks-charts
           helm repo update
           sleep 5
-          helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=basic-cluster --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller
+          helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=basic-cluster-3 --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller
 
       - name: Load URL
         id: get-url
         continue-on-error: true
         run: |
 
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-3
+          # get inside the dir
+          cd K8SDeploy/eks-cluster-config || true
           sleep 20
           kubectl get pods,svc -n istio-system
 
@@ -383,14 +415,16 @@ jobs:
       - name: Prometheus
         continue-on-error: true
         run: |
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-3
+          # get inside the dir
+          cd K8SDeploy/eks-cluster-config || true
           # Ensure git is installed
           if ! command -v git &> /dev/null; then
             echo "Git not found. Installing..."
             sudo apt-get update && sudo apt-get install -y git
           fi
           sleep 5
-          cd K8SDeploy/eks-cluster-config/other-setup
+          cd other-setup
           git clone --branch release-0.14 https://github.com/kserve/kserve.git
           sleep 5
           cd kserve
@@ -409,7 +443,9 @@ jobs:
       - name: Grafana
         continue-on-error: true
         run: |
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-3
+          # get inside the dir
+          cd K8SDeploy/eks-cluster-config || true
           sleep 5
           kubectl create namespace grafana
           sleep 2
@@ -499,7 +535,7 @@ jobs:
       - name: ArgoCD Setup
         continue-on-error: true
         run: |
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-3
           sleep 5
           kubectl create namespace argocd
           sleep 2
@@ -523,7 +559,7 @@ jobs:
         working-directory: emlo4-session-18-ajithvcoder-canary-argocd-kserve
         continue-on-error: true
         run: |
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-3
           sleep 5
           new_url="${{ steps.get-url.outputs.url }}"
           echo "Deploying with model URL: http://${new_url}/v1/models/vegfruits-classifier:predict"
