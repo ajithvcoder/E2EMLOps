@@ -180,19 +180,19 @@ jobs:
           echo "Updated by workflow in Repo A at $(date)" >> emlo4-session-18-ajithvcoder-canary-argocd-kserve/updates.log
 
       # 4. Commit & push changes to Repo B
-      - name: Commit & push to Repo B
-        working-directory: emlo4-session-18-ajithvcoder-canary-argocd-kserve
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+      # - name: Commit & push to Repo B
+      #   working-directory: emlo4-session-18-ajithvcoder-canary-argocd-kserve
+      #   run: |
+      #     git config user.name "github-actions[bot]"
+      #     git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add .
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-          else
-            git commit -m "Update from Repo A via GitHub Actions"
-            git push
-          fi
+      #     git add .
+      #     if git diff --cached --quiet; then
+      #       echo "No changes to commit."
+      #     else
+      #       git commit -m "Update from Repo A via GitHub Actions"
+      #       git push
+      #     fi
 
       # - name: Setup installations
       #   run: |
@@ -383,6 +383,20 @@ jobs:
       #     # if success push to prod
 
       #     # kubectl delete -f sports-classifier.yml
+
+      - name: Get LoadBalancer URL
+        id: get-url
+        run: |
+          # url=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          url=a28873898792898292782787387387-269881018.ap-south-1.elb.amazonaws.com
+          echo "url=$url" >> $GITHUB_OUTPUT
+
+      - name: Replace any AWS ELB URL in model-server.cm.yml
+        run: |
+          new_url="${{ steps.get-url.outputs.url }}"
+          file="emlo4-session-18-ajithvcoder-canary-argocd-kserve/fastapi-helm/templates/model-server.cm.yml"
+          # Replace any http://*.elb.amazonaws.com with the new URL
+          sed -E -i "s|http://[a-z0-9.-]+\.elb\.amazonaws\.com|http://$new_url|g" "$file"
 
       # - name: Delete Entire Stack
       #   continue-on-error: true
