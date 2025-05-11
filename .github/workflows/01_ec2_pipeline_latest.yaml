@@ -488,6 +488,7 @@ jobs:
           kubectl apply -k docs/samples/metrics-and-monitoring/prometheus  --validate=false
           sleep 10
           # TODO: Add qpext
+          cd ..
           kubectl patch configmaps -n knative-serving config-deployment --patch-file qpext_image_patch.yaml
           sleep 10
 
