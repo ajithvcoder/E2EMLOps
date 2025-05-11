@@ -240,14 +240,15 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - name: Configure AWS manually in root
+      - name: Configure AWS as root
         run: |
-          mkdir -p /root/.aws
-          echo "[default]" > /root/.aws/credentials
-          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> /root/.aws/credentials
-          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> /root/.aws/credentials
-          echo "[default]" > /root/.aws/config
-          echo "region = ap-south-1" >> /root/.aws/config
+          sudo mkdir -p /root/.aws
+          echo "[default]" | sudo tee /root/.aws/credentials
+          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" | sudo tee -a /root/.aws/credentials
+          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" | sudo tee -a /root/.aws/credentials
+
+          echo "[default]" | sudo tee /root/.aws/config
+          echo "region = ap-south-1" | sudo tee -a /root/.aws/config
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -261,6 +262,7 @@ jobs:
         run: |        
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-3
 
           kubectl delete -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml --validate=false || true
           sleep 5
@@ -327,6 +329,7 @@ jobs:
         run: |  
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-3
 
           #### Knative serving
 
