@@ -175,24 +175,10 @@ jobs:
           path: emlo4-session-18-ajithvcoder-canary-argocd-kserve
 
       # 3. Modify files in Repo ArgoCD
-      - name: Make changes in Repo ArgoCD
-        run: |
-          echo "Updated by workflow in Repo A at $(date)" >> emlo4-session-18-ajithvcoder-canary-argocd-kserve/updates.log
-
-      # 4. Commit & push changes to Repo B
-      # - name: Commit & push to Repo B
-      #   working-directory: emlo4-session-18-ajithvcoder-canary-argocd-kserve
+      # - name: Make changes in Repo ArgoCD
       #   run: |
-      #     git config user.name "github-actions[bot]"
-      #     git config user.email "github-actions[bot]@users.noreply.github.com"
+      #     echo "Updated by workflow in Repo A at $(date)" >> emlo4-session-18-ajithvcoder-canary-argocd-kserve/updates.log
 
-      #     git add .
-      #     if git diff --cached --quiet; then
-      #       echo "No changes to commit."
-      #     else
-      #       git commit -m "Update from Repo A via GitHub Actions"
-      #       git push
-      #     fi
 
       # - name: Setup installations
       #   run: |
@@ -398,6 +384,22 @@ jobs:
           # Replace any http://*.elb.amazonaws.com with the new URL
           sed -E -i "s|http://[a-z0-9.-]+\.elb\.amazonaws\.com|http://$new_url|g" "$file"
 
+      # 4. Commit & push changes to Repo B
+      - name: Commit & push to Repo B
+        working-directory: emlo4-session-18-ajithvcoder-canary-argocd-kserve
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add emlo4-session-18-ajithvcoder-canary-argocd-kserve/fastapi-helm/templates/model-server.cm.yml
+
+          git add .
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Update from Repo A via GitHub Actions"
+            git push
+          fi
+  
       # - name: Delete Entire Stack
       #   continue-on-error: true
       #   run: |
