@@ -198,7 +198,15 @@ jobs:
           # unzip awscliv2.zip
           # sudo ./aws/install
 
+          # Helm
+          curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+          chmod 700 get_helm.sh
+          ./get_helm.sh
 
+          # ArgoCD
+          curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+          sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+          # rm argocd-linux-amd64
 
       - name: Setup Cluster
         continue-on-error: true
@@ -333,40 +341,111 @@ jobs:
           # Pause
           sleep 10
 
-      - name: Inference imagenet
+      - name: Dashboard, ALB, Charts
         continue-on-error: true
-        id: get-url
         run: |
-          # get inside the dir
-          cd K8SDeploy/eks-cluster-config || true
+          # Kubernetes Dashboard
+          helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+          helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
+          sleep 3
+          kubectl label namespace default istio-injection=enabled
+          sleep 5
+          # ALB
+          eksctl create iamserviceaccount \
+              --cluster=basic-cluster \
+              --namespace=kube-system \
+              --name=aws-load-balancer-controller \
+              --attach-policy-arn=arn:aws:iam::306093656765:policy/AWSLoadBalancerControllerIAMPolicy \
+              --override-existing-serviceaccounts \
+              --region ap-south-1 \
+              --approve
 
-          kubectl apply -f sports-classifier.yml
-          # Pause
-          sleep 15
+          # EKS Charts
+          helm repo add eks https://aws.github.io/eks-charts
+          helm repo update
+          sleep 5
+          helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=basic-cluster --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller
 
-          kubectl get isvc
-
-          kubectl get svc -n istio-system
-
-          # Pause
-          sleep 25
-
-          kubectl get isvc
-
-          kubectl get svc -n istio-system
-
-          sleep 30
-
-          # TODO: Fetch the url and commit it to the argocd repo
-          # use -dev for s3
-          # Do load test and test it
-          # if success push to prod
-
-          # kubectl delete -f sports-classifier.yml
+          sleep 20
+          kubectl get pods,svc -n istio-system
 
           url=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
           # url=a28873898792898292782787387387-269881018.ap-south-1.elb.amazonaws.com
           echo "url=$url" >> $GITHUB_OUTPUT
+          sleep 5
+
+      - name: Prometheus
+        continue-on-error: true
+        run: |
+          # Ensure git is installed
+          if ! command -v git &> /dev/null; then
+            echo "Git not found. Installing..."
+            sudo apt-get update && sudo apt-get install -y git
+          fi
+          sleep 5
+          cd K8SDeploy/eks-cluster-config/other-setup
+          git clone --branch release-0.14 https://github.com/kserve/kserve.git
+          sleep 5
+          cd kserve
+          sleep 5
+          kubectl apply -k docs/samples/metrics-and-monitoring/prometheus-operator
+          sleep 5
+          kubectl wait --for condition=established --timeout=120s crd/prometheuses.monitoring.coreos.com
+          sleep 5
+          kubectl wait --for condition=established --timeout=120s crd/servicemonitors.monitoring.coreos.com
+          sleep 5
+          kubectl apply -k docs/samples/metrics-and-monitoring/prometheus
+          sleep 5
+          # TODO: Add qpext
+          kubectl patch configmaps -n knative-serving config-deployment --patch-file qpext_image_patch.yaml
+
+      - name: Grafana
+        continue-on-error: true
+        run: |
+          kubectl create namespace grafana
+          sleep 2
+          helm repo add grafana https://grafana.github.io/helm-charts
+          sleep 5
+          helm repo update
+          helm install grafana grafana/grafana --namespace grafana --version 8.8.4
+          sleep 5
+          kubectl get secret --namespace grafana grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+
+
+      # - name: Inference imagenet
+      #   continue-on-error: true
+      #   id: get-url
+      #   run: |
+      #     # get inside the dir
+      #     cd K8SDeploy/eks-cluster-config || true
+
+      #     # kubectl apply -f sports-classifier.yml
+      #     # Pause
+      #     sleep 15
+
+      #     kubectl get isvc
+
+      #     kubectl get svc -n istio-system
+
+      #     # Pause
+      #     sleep 25
+
+      #     kubectl get isvc
+
+      #     kubectl get svc -n istio-system
+
+      #     sleep 30
+
+      #     # TODO: Fetch the url and commit it to the argocd repo
+      #     # use -dev for s3
+      #     # Do load test and test it
+      #     # if success push to prod
+
+      #     # kubectl delete -f sports-classifier.yml
+
+      #     url=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+      #     # url=a28873898792898292782787387387-269881018.ap-south-1.elb.amazonaws.com
+      #     echo "url=$url" >> $GITHUB_OUTPUT
 
       # - name: Get LoadBalancer URL
       #   id: get-url
@@ -375,7 +454,7 @@ jobs:
       #     # url=a28873898792898292782787387387-269881018.ap-south-1.elb.amazonaws.com
       #     echo "url=$url" >> $GITHUB_OUTPUT
 
-      # 2. Checkout Repo B (separate folder)
+      # 2. Checkout Repo ArgoCD (separate folder)
       # https://github.com/ajithvcoder/emlo4-session-18-ajithvcoder-canary-argocd-kserve.git
       - name: Checkout Repo ArgoCD
         uses: actions/checkout@v4
@@ -406,7 +485,105 @@ jobs:
             git commit -m "Update from Repo A via GitHub Actions"
             git push
           fi
-  
+          sleep 10
+
+      - name: ArgoCD Setup
+        continue-on-error: true
+        run: |
+          kubectl create namespace argocd
+          sleep 2
+          kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+          sleep 5
+          argocd admin initial-password -n argocd
+
+
+      - name: Create s3-secret.yaml
+        working-directory: emlo4-session-18-ajithvcoder-canary-argocd-kserve
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          # mkdir -p argo-apps
+          python3 utils/generate_s3_secret.py
+          sleep 5
+          ls argo-apps
+
+      - name: ArgoCD Deployment
+        working-directory: emlo4-session-18-ajithvcoder-canary-argocd-kserve
+        continue-on-error: true
+        run: |
+          new_url="${{ steps.get-url.outputs.url }}"
+          echo "Deploying with model URL: http://${new_url}/v1/models/vegfruits-classifier:predict"
+
+          kubectl apply -f argo-apps
+          sleep 200
+
+          kubectl get pods
+
+          sleep 200
+
+          kubectl get pods
+
+
+      - name: Model 1 - Run test and promote if >90% success
+        working-directory: emlo4-session-18-ajithvcoder-canary-argocd-kserve
+        continue-on-error: true
+        run: |
+          # Run test and capture output
+          output=$(python3 utils/test_load_vegfruits_2.py --url "http://${{ steps.get-url.outputs.url }}/v1/models/vegfruits-classifier:predict" --requests 10 --workers 2)
+          
+          echo "$output"
+          
+          # Extract total and successful requests
+          total=$(echo "$output" | grep "Total requests:" | awk '{print $3}')
+          success=$(echo "$output" | grep "Successful requests:" | awk '{print $3}')
+
+          echo "Total: $total, Successful: $success"
+
+          if [ "$total" -gt 0 ]; then
+            percent=$(( success * 100 / total ))
+            echo "Success rate: ${percent}%"
+
+            if [ "$percent" -ge 90 ]; then
+              echo "✅ Success rate is above 90%, syncing to production S3..."
+              aws s3 cp --recursive s3://mybucket-emlo-mumbai/kserve-ig/vegfruits-classifier-dummy/ s3://mybucket-emlo-mumbai/kserve-ig/vegfruits-classifier-prod/
+            else
+              echo "❌ Success rate is below 90%, skipping promotion."
+            fi
+          else
+            echo "⚠️ No requests processed, skipping promotion."
+          fi
+          sleep 30
+
+      - name: Model 2 - Run test and promote if >90% success
+        working-directory: emlo4-session-18-ajithvcoder-canary-argocd-kserve
+        continue-on-error: true
+        run: |
+          # Run test and capture output
+          output=$(python3 utils/test_load_sports_2.py --url "http://${{ steps.get-url.outputs.url }}/v1/models/sports-classifier:predict" --requests 10 --workers 2)
+          
+          echo "$output"
+          
+          # Extract total and successful requests
+          total=$(echo "$output" | grep "Total requests:" | awk '{print $3}')
+          success=$(echo "$output" | grep "Successful requests:" | awk '{print $3}')
+
+          echo "Total: $total, Successful: $success"
+
+          if [ "$total" -gt 0 ]; then
+            percent=$(( success * 100 / total ))
+            echo "Success rate: ${percent}%"
+
+            if [ "$percent" -ge 90 ]; then
+              echo "✅ Success rate is above 90%, syncing to production S3..."
+              aws s3 cp --recursive s3://mybucket-emlo-mumbai/kserve-ig/sports-classifier-dummy/ s3://mybucket-emlo-mumbai/kserve-ig/sports-classifier-prod/
+            else
+              echo "❌ Success rate is below 90%, skipping promotion."
+            fi
+          else
+            echo "⚠️ No requests processed, skipping promotion."
+          fi
+
       # - name: Delete Entire Stack
       #   continue-on-error: true
       #   run: |
