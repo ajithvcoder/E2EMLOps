@@ -5,7 +5,7 @@ iam:
   withOIDC: true
 
 metadata:
-  name: basic-cluster-5
+  name: basic-cluster-6
   region: ap-south-1
   # region: us-west-2
   version: "1.30"
