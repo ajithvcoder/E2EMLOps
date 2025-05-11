@@ -228,7 +228,7 @@ jobs:
 
       - name: Configure kubectl
         continue-on-error: true
-        run: aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-2
+        run: aws eks update-kubeconfig --region ap-south-1 --name basic-cluster
 
       - name: Kubernetes Setup
         continue-on-error: true
@@ -328,7 +328,7 @@ jobs:
           # Pause
           sleep 30
 
-          eksctl create iamserviceaccount --cluster=basic-cluster-2 --name=s3-read-only --attach-policy-arn=arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess  --override-existing-serviceaccounts --region ap-south-1 --approve
+          eksctl create iamserviceaccount --cluster=basic-cluster --name=s3-read-only --attach-policy-arn=arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess  --override-existing-serviceaccounts --region ap-south-1 --approve
 
           # Pause
           sleep 3
@@ -352,7 +352,7 @@ jobs:
           sleep 5
           # ALB
           eksctl create iamserviceaccount \
-              --cluster=basic-cluster-2 \
+              --cluster=basic-cluster \
               --namespace=kube-system \
               --name=aws-load-balancer-controller \
               --attach-policy-arn=arn:aws:iam::306093656765:policy/AWSLoadBalancerControllerIAMPolicy \
@@ -364,14 +364,14 @@ jobs:
           helm repo add eks https://aws.github.io/eks-charts
           helm repo update
           sleep 5
-          helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=basic-cluster-2 --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller
+          helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=basic-cluster --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller
 
       - name: Load URL
         id: get-url
         continue-on-error: true
         run: |
 
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-2
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster
           sleep 20
           kubectl get pods,svc -n istio-system
 
@@ -383,7 +383,7 @@ jobs:
       - name: Prometheus
         continue-on-error: true
         run: |
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-2
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster
           # Ensure git is installed
           if ! command -v git &> /dev/null; then
             echo "Git not found. Installing..."
@@ -409,7 +409,7 @@ jobs:
       - name: Grafana
         continue-on-error: true
         run: |
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-2
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster
           sleep 5
           kubectl create namespace grafana
           sleep 2
@@ -499,7 +499,7 @@ jobs:
       - name: ArgoCD Setup
         continue-on-error: true
         run: |
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-2
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster
           sleep 5
           kubectl create namespace argocd
           sleep 2
@@ -523,7 +523,7 @@ jobs:
         working-directory: emlo4-session-18-ajithvcoder-canary-argocd-kserve
         continue-on-error: true
         run: |
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-2
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster
           sleep 5
           new_url="${{ steps.get-url.outputs.url }}"
           echo "Deploying with model URL: http://${new_url}/v1/models/vegfruits-classifier:predict"
