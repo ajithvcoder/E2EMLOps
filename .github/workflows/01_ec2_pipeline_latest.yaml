@@ -114,12 +114,12 @@ jobs:
           mode: start
           github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           # AMI with CUDA/GPU drivers
-          # ec2-image-id: ami-01654480b8a1994bd
-          # ec2-instance-type: g4dn.xlarge
+          ec2-image-id: ami-01654480b8a1994bd
+          ec2-instance-type: g4dn.xlarge
 
           # AMI with CPU only
-          ec2-image-id: ami-0e35ddab05955cf57
-          ec2-instance-type: t3a.xlarge
+          # ec2-image-id: ami-0e35ddab05955cf57
+          # ec2-instance-type: t3a.xlarge
           subnet-id: ${{ secrets.AWS_SUBNET_ID_1 }}
           security-group-id: ${{ secrets.AWS_SECURITY_GROUP_ID }}
           market-type: "spot"
