@@ -165,14 +165,7 @@ jobs:
         run: |
           echo "commit_id=${{ needs.launch-runner.outputs.commit_id }}" >> $GITHUB_OUTPUT
 
-      # 2. Checkout Repo B (separate folder)
-      # https://github.com/ajithvcoder/emlo4-session-18-ajithvcoder-canary-argocd-kserve.git
-      - name: Checkout Repo ArgoCD
-        uses: actions/checkout@v4
-        with:
-          repository: ajithvcoder/emlo4-session-18-ajithvcoder-canary-argocd-kserve
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # PAT with write access to Repo B
-          path: emlo4-session-18-ajithvcoder-canary-argocd-kserve
+
 
       # 3. Modify files in Repo ArgoCD
       # - name: Make changes in Repo ArgoCD
@@ -376,6 +369,15 @@ jobs:
           url=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
           # url=a28873898792898292782787387387-269881018.ap-south-1.elb.amazonaws.com
           echo "url=$url" >> $GITHUB_OUTPUT
+
+      # 2. Checkout Repo B (separate folder)
+      # https://github.com/ajithvcoder/emlo4-session-18-ajithvcoder-canary-argocd-kserve.git
+      - name: Checkout Repo ArgoCD
+        uses: actions/checkout@v4
+        with:
+          repository: ajithvcoder/emlo4-session-18-ajithvcoder-canary-argocd-kserve
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # PAT with write access to Repo B
+          path: emlo4-session-18-ajithvcoder-canary-argocd-kserve
 
       - name: Replace any AWS ELB URL in model-server.cm.yml
         run: |
