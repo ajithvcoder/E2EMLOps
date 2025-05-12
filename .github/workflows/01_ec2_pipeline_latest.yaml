@@ -119,7 +119,8 @@ jobs:
 
           # AMI with CPU only
           # ec2-image-id: ami-0e35ddab05955cf57
-          # ec2-instance-type: t3a.xlarge
+          ec2-image-id: ami-01654480b8a1994bd
+          ec2-instance-type: t3a.xlarge
           subnet-id: ${{ secrets.AWS_SUBNET_ID_1 }}
           security-group-id: ${{ secrets.AWS_SECURITY_GROUP_ID }}
           market-type: "spot"
@@ -487,7 +488,7 @@ jobs:
           sleep 20
           kubectl apply -k docs/samples/metrics-and-monitoring/prometheus  --validate=false
           sleep 10
-          # TODO: Add qpext
+
           cd ..
           kubectl patch configmaps -n knative-serving config-deployment --patch-file qpext_image_patch.yaml
           sleep 10
