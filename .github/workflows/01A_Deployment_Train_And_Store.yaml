@@ -1,7 +1,7 @@
 name: Deployment 01A - Train and push to S3
 
-# on:
-#   workflow_call:
+on:
+  workflow_call:
 
 # # When to run this workflow
 on:
@@ -139,7 +139,7 @@ jobs:
     runs-on: ${{ needs.launch-runner.outputs.label }}
     outputs:
       commit_id: ${{ steps.get_commit_id_ec2.outputs.commit_id }}
-    timeout-minutes: 60
+    timeout-minutes: 20
     
     steps:
       - name: Checkout Code
@@ -156,6 +156,10 @@ jobs:
         run: |
           # Now you can run any AWS CLI command
           aws s3 ls  # Example command to list S3 buckets
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_LOGIN_URI }}
 
       - name: Pull Docker image from ECR
         run: |
