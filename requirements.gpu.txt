@@ -45,3 +45,12 @@ wandb==0.19.6
 torchserve==0.12.0
 torch-model-archiver==0.12.0
 torch-workflow-archiver==0.2.15
+scikit-learn
+loguru
+onnx
+matplotlib
+optuna
+hydra-joblib-launcher
+rootutils
+lightning
+hydra-core
