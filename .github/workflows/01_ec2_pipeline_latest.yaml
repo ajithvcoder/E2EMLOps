@@ -1,8 +1,11 @@
 name: Project 01 - Kubernetes Deployment
 
-# When to run this workflow
 on:
-  workflow_dispatch:  # Manual trigger from GitHub UI
+  workflow_call:
+
+# When to run this workflow
+# on:
+#   workflow_dispatch:  # Manual trigger from GitHub UI
   # Uncomment to enable automatic triggers
   # push:
   #   branches: [ main ]
