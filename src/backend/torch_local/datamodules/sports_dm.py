@@ -19,6 +19,7 @@ import lightning as pl
 import torchvision
 from torch.utils.data import DataLoader, default_collate
 from torchvision.datasets import DatasetFolder
+from torchvision import transforms
 
 from src.backend.torch_local.utils.helpers import custom_check_image, custom_loader
 
