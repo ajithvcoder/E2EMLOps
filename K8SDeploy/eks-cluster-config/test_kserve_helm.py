@@ -5,7 +5,7 @@ url = "http://a9b064a181f464079a66b39f0f8dc30a-527434120.ap-south-1.elb.amazonaw
 
 with open("input.json") as f:
     payload = json.load(f)
-headers = {"Host": "fastapi-mamba-model-2.default.emlo.tsai", "Content-Type": "application/json"}
+headers = {"Host": "timm-model-2.default.emlo.tsai", "Content-Type": "application/json"}
 
 response = requests.request("POST", url, headers=headers, json=payload)
 

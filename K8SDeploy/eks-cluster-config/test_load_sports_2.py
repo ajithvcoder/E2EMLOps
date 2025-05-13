@@ -21,7 +21,7 @@ def make_request(url: str) -> Dict:
     """Make a single request to the API"""
     with open("input.json") as f:
         payload = json.load(f)
-    headers_1 = {"Host": "fastapi-mamba-model-2.default.emlo.tsai", "Content-Type": "application/json"}
+    headers_1 = {"Host": "timm-model-2.default.emlo.tsai", "Content-Type": "application/json"}
     
     # files = {"image": ("dog.jpg", image_data, "image/jpeg")}
     start_time = time.time()

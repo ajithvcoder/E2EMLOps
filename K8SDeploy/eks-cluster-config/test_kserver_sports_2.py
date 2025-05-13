@@ -2,7 +2,7 @@
 import requests
 import json
 
-url_1 = "http://a250c292ee6114b8e9d6f23f6d8690bc-1957734331.ap-south-1.elb.amazonaws.com/v1/models/sports-classifier:predict"
+url_1 = "http://a82f89a5c4cc847b7ba40070efce3746-1537257378.ap-south-1.elb.amazonaws.com/v1/models/sports-classifier:predict"
 
 with open("input.json") as f:
     payload = json.load(f)

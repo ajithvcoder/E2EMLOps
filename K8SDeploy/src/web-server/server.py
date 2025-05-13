@@ -70,7 +70,7 @@ async def classify_vegfruits(image: Annotated[bytes, File()]):
     async with httpx.AsyncClient(timeout=httpx.Timeout(80.0)) as client:
         try:
             print("sending post request")
-            headers = {"Host": "fastapi-mamba-model-1-predictor.default.emlo.tsai", "Content-Type": "application/json"}
+            headers = {"Host": "timm-model-1-predictor.default.emlo.tsai", "Content-Type": "application/json"}
 
             # files = {"image": image}
             response = await client.post(
@@ -109,7 +109,7 @@ async def classify_sports(image: Annotated[bytes, File()]):
     async with httpx.AsyncClient(timeout=httpx.Timeout(80.0)) as client:
         try:
             print("sending post request")
-            headers = {"Host": "fastapi-mamba-model-2-predictor.default.emlo.tsai", "Content-Type": "application/json"}
+            headers = {"Host": "timm-model-2-predictor.default.emlo.tsai", "Content-Type": "application/json"}
 
             # files = {"image": image}
             response = await client.post(
