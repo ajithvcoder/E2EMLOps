@@ -1,0 +1,12 @@
+name: Deployment 01 - Main PR Trigger Workflow
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  trigger-train:
+    uses: ./.github/workflows/01A_Deployment_Train_And_Store.yaml
+
+  # trigger-deploy:
+  #   uses: ./.github/workflows/01B_Deployment_ArgoCD_And_Promote.yaml

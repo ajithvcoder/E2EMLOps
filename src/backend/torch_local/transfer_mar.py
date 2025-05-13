@@ -46,8 +46,8 @@ for project in all_projects:
     handler_path = f"src/backend/torchserve_app/{project}_handler.py"   # Update if needed
 
     s3_bucket = "mybucket-emlo-mumbai"
-    s3_key_prefix = f"kserve-ig/{project}-classifier-dummy"  # e.g., "models/sports"
-    # s3://mybucket-emlo-mumbai/kserve-ig/sports-classifier-dummy/
+    s3_key_prefix = f"kserve-ig/{project}-classifier-dev"  # e.g., "models/sports"
+    # s3://mybucket-emlo-mumbai/kserve-ig/sports-classifier-dev/
 
     # Step 1: Create destination directory
     deploy_dir = Path("checkpoints/deployment") / project
