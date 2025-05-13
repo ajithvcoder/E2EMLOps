@@ -27,7 +27,8 @@ def custom_loader(path:str,*,size:tuple=(224,224))->NDArray:
         helper utils to load  image_path to np.array shape:: ( C, H, W )
     '''
     # Image.open  >> ( H , W , C )   >>  ( C, H, W )
-    return np.array(Image.open(path).convert("RGB").resize(size=size))#.transpose(0,1,2) #,dtype=np.float32
+    # return np.array(Image.open(path).convert("RGB").resize(size=size))#.transpose(0,1,2) #,dtype=np.float32
+    return Image.open(path).convert("RGB").resize(size)
 
 
 def distribution_fn(dataloader:DataLoader,path=".")->None:

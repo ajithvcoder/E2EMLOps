@@ -167,8 +167,6 @@ def main(cfg: DictConfig):
                 os.remove(cpu_model_file_path)
             torch.jit.save(cpu_scripted_model, cpu_model_file_path)
             print(f"torch script model saved: {cpu_model_file_path=}")
-            
-            
 
         onnx_model_file_path:str = os.path.join( f"{cfg.paths.root_dir}","checkpoints","onnxs", f"{cfg.name}.onnx" )
         print(onnx_model_file_path)
@@ -176,7 +174,7 @@ def main(cfg: DictConfig):
             print("removing old onnx files!!")
             os.remove(onnx_model_file_path)
 
-        model.to_onnx(file_path=onnx_model_file_path,input_sample=imgs, export_params=True,verbose=True, dynamic_axes={'input': {0: 'batch'}},input_names=['input'],output_names=['output'])
+        model.to_onnx(file_path=onnx_model_file_path, verbose=False, input_sample=imgs, export_params=True, dynamic_axes={'input': {0: 'batch'}},input_names=['input'],output_names=['output'])
         print(f"onnx model saved: {onnx_model_file_path}")
 
     # Return Float for Hparams ::returning train_loss for optuna to compare 'test/acc_epoch','test/loss_epoch'

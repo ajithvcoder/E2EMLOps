@@ -13,16 +13,18 @@ defaults:
 seed: 42
 
 data:
-  batch_size: 8
-  num_workers: 2
-  pin_memory: False
+  batch_size: 64
+  num_workers: 4
+  pin_memory: True
 
 trainer:
-  min_epochs: 1
-  max_epochs: 5
-  limit_train_batches: 0.05
-  limit_test_batches:  0.05
-  limit_val_batches: 0.05
+  min_epochs: 2
+  max_epochs: 3
+  # Config Gets 90% + accuracy without limiting data
+  # Helps in faster testing
+  # limit_train_batches: 0.05
+  # limit_test_batches:  0.05
+  # limit_val_batches: 0.05
 
 callbacks:
   model_checkpoint:
@@ -62,7 +64,7 @@ hydra:
     n_trials: 1
     n_jobs: 1
     params:
-      ++model.patch_size: choice(8, 16, 32)
+      ++model.patch_size: choice(4, 8, 16)
       ++model.embed_dim: choice(64, 96, 128)
 
   launcher:

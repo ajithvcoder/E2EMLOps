@@ -21,9 +21,15 @@ from torch.utils.data import DataLoader, default_collate
 from torchvision.datasets import DatasetFolder
 
 from src.backend.torch_local.utils.helpers import custom_check_image, custom_loader
+from torchvision import transforms
 
 __all__ = ['LitVegFruitsDataModule']
 
+img_transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                         std=[0.229, 0.224, 0.225])
+])
 
 class LitVegFruitsDataModule(pl.LightningDataModule):
     def __init__(
@@ -52,10 +58,10 @@ class LitVegFruitsDataModule(pl.LightningDataModule):
         if stage is None:
             raise ValueError('nothing loaded in the DataModule!!')
         if stage=='fit':
-            self.train_ds:DatasetFolder  = DatasetFolder(root=self.train_dir,loader=custom_loader,is_valid_file=custom_check_image,transform=torchvision.transforms.Compose([torchvision.transforms.ToTensor(),]))
-            self.valid_ds:DatasetFolder  = DatasetFolder(root=self.valid_dir,loader=custom_loader,is_valid_file=custom_check_image,transform=torchvision.transforms.Compose([torchvision.transforms.ToTensor(),]))
+            self.train_ds:DatasetFolder  = DatasetFolder(root=self.train_dir,loader=custom_loader,is_valid_file=custom_check_image,transform=img_transform)
+            self.valid_ds:DatasetFolder  = DatasetFolder(root=self.valid_dir,loader=custom_loader,is_valid_file=custom_check_image,transform=img_transform)
         elif stage=='test':
-            self.test_ds:DatasetFolder   = DatasetFolder(root=self.test_dir,loader=custom_loader,is_valid_file=custom_check_image,transform=torchvision.transforms.Compose([torchvision.transforms.ToTensor(),]))   #,transform=Compose([Resize((224,224)),ToTensor])
+            self.test_ds:DatasetFolder   = DatasetFolder(root=self.test_dir,loader=custom_loader,is_valid_file=custom_check_image,transform=img_transform)   #,transform=Compose([Resize((224,224)),ToTensor])
 
     def train_dataloader(self):
         return DataLoader(self.train_ds,batch_size=self.batch_size,shuffle=True,num_workers=self.num_workers,collate_fn=default_collate,pin_memory=self.pin_memory) #,generator=torch.Generator(device=device)
