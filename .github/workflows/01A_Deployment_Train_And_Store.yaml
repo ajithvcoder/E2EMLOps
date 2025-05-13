@@ -4,8 +4,8 @@ on:
   workflow_call:
 
 # # When to run this workflow
-on:
-  workflow_dispatch:  # Manual trigger from GitHub UI
+# on:
+#   workflow_dispatch:  # Manual trigger from GitHub UI
   # Uncomment to enable automatic triggers
   # push:
   #   branches: [ main ]
