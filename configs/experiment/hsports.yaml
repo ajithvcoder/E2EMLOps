@@ -13,16 +13,16 @@ defaults:
 seed: 42
 
 data:
-  batch_size: 8
-  num_workers: 2
-  pin_memory: False
+  batch_size: 64
+  num_workers: 4
+  pin_memory: True
 
 trainer:
-  min_epochs: 1
-  max_epochs: 2
-  limit_train_batches: 0.05
-  limit_test_batches:  0.05
-  limit_val_batches: 0.05
+  min_epochs: 3
+  max_epochs: 4
+  # limit_train_batches: 0.05
+  # limit_test_batches:  0.05
+  # limit_val_batches: 0.05
 
 callbacks:
   model_checkpoint:
@@ -67,8 +67,8 @@ hydra:
       ++model.act_layer: choice('relu','gelu')
       ++model.global_pool: choice('avg','fast')
       ++model.depths: "[2,2,6,2],[3,3,9,3]"
-      ++model.dims: "[24,48,22,168],[12,32,44,96]"
-      ++model.kernel_sizes: "[3, 5, 7, 9],[3,3,3,3]"
+      ++model.dims: "[24,48,96,176],[24,48,96,176]"
+      ++model.kernel_sizes: "[3, 3, 3, 3],[3,3,3,3]"
       ++model.use_pos_emb: "[False,True,False,False], [True,True,True,False]"
 
   launcher:
