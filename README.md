@@ -238,3 +238,31 @@ make sure data/processed {sports, vegfruits} are present
 dvc remote add -d myremote s3://mybucket-emlo-mumbai/session-18-data
 dvc add data
 dvc push -r myremote
+
+### Docker command
+
+to train
+
+docker run --gpus=all \
+            --name session-18-container \
+            -v "$(pwd):/workspace" \
+            -e AWS_ACCESS_KEY_ID=AWS_ACCESS_KEY_ID \
+            -e AWS_SECRET_ACCESS_KEY=AWS_SECRET_ACCESS_KEY+AWS_SECRET_ACCESS_KEY \
+            -e AWS_DEFAULT_REGION=AWS_DEFAULT_REGION \
+            -e AWS_REGION=AWS_REGION \
+            emlo-18-train  \
+            /bin/bash -c "
+              dvc pull -r myremote && \
+              dvc repro -f
+            "
+
+docker run -it --gpus=all \
+            --name session-18-container \
+            --shm-size=8g \
+            -v "$(pwd):/workspace" \
+            -e AWS_ACCESS_KEY_ID=AWS_ACCESS_KEY_ID \
+            -e AWS_SECRET_ACCESS_KEY=AWS_SECRET_ACCESS_KEY \
+            -e AWS_DEFAULT_REGION=AWS_REGION \
+            -e AWS_REGION=AWS_REGION \
+            emlo-18-train  \
+            /bin/bash 

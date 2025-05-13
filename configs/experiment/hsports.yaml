@@ -13,8 +13,12 @@ defaults:
 seed: 42
 
 data:
+  # inside normal gpu systems
   batch_size: 64
   num_workers: 4
+  # inside docker containers
+  # batch_size: 8
+  # num_workers: 2
   pin_memory: True
 
 trainer:
