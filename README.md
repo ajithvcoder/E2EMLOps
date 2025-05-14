@@ -47,12 +47,15 @@ Kubernetes manifest files and Helm charts.
 Performance metrics, including latency and stress test results.
 
 ### Pending for Deployment 1
-- Workflow to train on pull request and store to s3-dev and compare with prod model accuracy and comment in github actions
+Code
 - Torchserve not giving proper predictions even for true class, check it - look later - check if its the preprocessing issue
-
-- Workflow to train on push request and store to s3-stage
-- Comment on the commit with cml for stress test results
+- Transfer_mar should transfer .pt file and accuracy text file to s3. it can be used for gradio, lambda and accuracy checking
+- Update Workflow to train on pull request and store to s3-dev and compare with prod model accuracy and comment in github actions
+- Update Workflow to train on push request and store to s3-stage for deployment
 - After stress test move from stage to prod 
+- Comment on the commit with cml for stress test results
+
+Docs
 - Architecture diagram
 - Screenshots of deployment and video
 

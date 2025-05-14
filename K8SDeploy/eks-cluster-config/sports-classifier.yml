@@ -6,9 +6,9 @@ metadata:
     serving.kserve.io/enable-metric-aggregation: "true"
     serving.kserve.io/enable-prometheus-scraping: "true"
     autoscaling.knative.dev/minScale: "1"
-    autoscaling.knative.dev/maxScale: "10"
+    autoscaling.knative.dev/maxScale: "3"
     autoscaling.knative.dev/metric: "rps"
-    autoscaling.knative.dev/target: "20" 
+    autoscaling.knative.dev/target: "5"
 spec:
   predictor:
     minReplicas: 1
@@ -18,18 +18,18 @@ spec:
     serviceAccountName: s3-read-only
     pytorch:
       protocolVersion: v1
-      storageUri: s3://mybucket-emlo-mumbai/kserve-ig/sports-classifier-dummy/
+      storageUri: s3://mybucket-emlo-mumbai/kserve-ig/sports-classifier-prod/
       # storageUri: s3://tsai-emlo/kserve-ig/fakeimagenet-vit/
       # image: pytorch/torchserve-kfs:0.12.0
       image: 306093656765.dkr.ecr.ap-south-1.amazonaws.com/model-onnx-server:latest
       imagePullPolicy: Always
       resources:
         requests:
-          cpu: "2400m"    # Average CPU usage is around 700m
-          memory: "3.5Gi" # Average memory usage is around 600Mi
+          cpu: 800m
+          memory: 1.5Gi
         limits:
-          cpu: 5200m
-          memory: 8Gi
+          cpu: 2600m
+          memory: 4Gi
       env:
         - name: TS_DISABLE_TOKEN_AUTHORIZATION
           value: "true"
