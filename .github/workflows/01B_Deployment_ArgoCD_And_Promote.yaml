@@ -95,7 +95,7 @@ jobs:
   #----------------------------------------
   do-the-job:
     name: Cluster Setup - Argo CD Deployment - Prompte Model
-    needs: [launch-runner, build-and-push-ecr-image]
+    needs: [launch-runner]
     runs-on: ${{ needs.launch-runner.outputs.label }}
     outputs:
       commit_id: ${{ steps.get_commit_id_ec2.outputs.commit_id }}
