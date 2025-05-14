@@ -3,7 +3,7 @@ _target_: "src.backend.torch_local.models.mvegfruits.LitVegFruitsModel"
 
 # Model parameters
 base_model: convnext_tiny
-num_classes: 63
+num_classes: 36
 # pretrained: False
 
 depths: (3, 3, 9, 3)      # Deeper layers for hierarchical feature learning

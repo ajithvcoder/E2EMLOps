@@ -696,7 +696,7 @@ jobs:
           cd K8SDeploy/eks-cluster-config || true
 
           # delete cluster
-          # eksctl delete cluster -f eks-cluster.yaml --disable-nodegroup-eviction
+          eksctl delete cluster -f eks-cluster.yaml --disable-nodegroup-eviction
 
   #----------------------------------------
   # JOB 3: Stop EC2 runner after completion
