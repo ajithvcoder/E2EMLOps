@@ -41,9 +41,8 @@ jobs:
   # JOB 1: Launch EC2 runner instance - CPU instance for setuping cluster environments
   #----------------------------------------
   launch-runner:
-    name: 🚀 Launch EC2 GPU Runner
+    name: 🚀 Launch EC2 Runner
     runs-on: ubuntu-latest
-    needs: build-and-push-ecr-image
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
@@ -95,7 +94,7 @@ jobs:
   # JOB 2: Train model and deploy
   #----------------------------------------
   do-the-job:
-    name: Train Models and Deploy
+    name: Cluster Setup - Argo CD Deployment - Prompte Model
     needs: [launch-runner, build-and-push-ecr-image]
     runs-on: ${{ needs.launch-runner.outputs.label }}
     outputs:
@@ -651,7 +650,7 @@ jobs:
 
             if [ "$percent" -ge 90 ]; then
               echo "✅ Success rate is above 90%, syncing to production S3..."
-              aws s3 cp --recursive s3://mybucket-emlo-mumbai/kserve-ig/vegfruits-classifier-dummy/ s3://mybucket-emlo-mumbai/kserve-ig/vegfruits-classifier-prod/
+              aws s3 cp --recursive s3://mybucket-emlo-mumbai/kserve-ig/vegfruits-classifier-dev/ s3://mybucket-emlo-mumbai/kserve-ig/vegfruits-classifier-prod/
             else
               echo "❌ Success rate is below 90%, skipping promotion."
             fi
@@ -682,7 +681,7 @@ jobs:
 
             if [ "$percent" -ge 90 ]; then
               echo "✅ Success rate is above 90%, syncing to production S3..."
-              aws s3 cp --recursive s3://mybucket-emlo-mumbai/kserve-ig/sports-classifier-dummy/ s3://mybucket-emlo-mumbai/kserve-ig/sports-classifier-prod/
+              aws s3 cp --recursive s3://mybucket-emlo-mumbai/kserve-ig/sports-classifier-dev/ s3://mybucket-emlo-mumbai/kserve-ig/sports-classifier-prod/
             else
               echo "❌ Success rate is below 90%, skipping promotion."
             fi
