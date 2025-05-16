@@ -45,7 +45,7 @@ jobs:
     name: 📦 Build and Push Docker Image
     runs-on: ubuntu-22.04
     outputs:
-      commit_id: ${{ steps.get_commit_id.outputs.commit_id }}
+      # commit_id: ${{ steps.get_commit_id.outputs.commit_id }}
       registry: ${{ steps.login-ecr.outputs.registry }}
       docker_username: ${{ steps.login-ecr.outputs.docker_username_306093656765_dkr_ecr_ap_south_1_amazonaws_com }}
       docker_password: ${{ steps.login-ecr.outputs.docker_password_306093656765_dkr_ecr_ap_south_1_amazonaws_com }}
@@ -71,15 +71,15 @@ jobs:
         with:
           mask-password: 'false'
 
-      - name: Get Latest Commit ID
-        id: get_commit_id
-        run: |
-          latest_commit=$(git rev-parse HEAD)
-          echo "commit_id=$latest_commit" >> $GITHUB_OUTPUT
+      # - name: Get Latest Commit ID
+      #   id: get_commit_id
+      #   run: |
+      #     latest_commit=$(git rev-parse HEAD)
+      #     echo "commit_id=$latest_commit" >> $GITHUB_OUTPUT
       
-      - name: Display the commit ID        
-        run: |
-          echo "Latest commit ID is: ${{ steps.get_commit_id.outputs.commit_id }}"
+      # - name: Display the commit ID        
+      #   run: |
+      #     echo "Latest commit ID is: ${{ steps.get_commit_id.outputs.commit_id }}"
 
       - name: Build and Push Docker Image
         id: build-image
@@ -104,7 +104,7 @@ jobs:
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
-      commit_id: ${{ steps.get_commit_id_runner.outputs.commit_id }}
+      # commit_id: ${{ steps.get_commit_id_runner.outputs.commit_id }}
       
     env:
       TF_LOG: DEBUG
@@ -156,8 +156,8 @@ jobs:
     name: Train Models and Deploy
     needs: [launch-runner]
     runs-on: ${{ needs.launch-runner.outputs.label }}
-    outputs:
-      commit_id: ${{ steps.get_commit_id_ec2.outputs.commit_id }}
+    # outputs:
+    #   commit_id: ${{ steps.get_commit_id_ec2.outputs.commit_id }}
     timeout-minutes: 45
     
     steps:
