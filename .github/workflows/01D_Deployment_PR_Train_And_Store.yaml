@@ -1,4 +1,4 @@
-name: Deployment 01 - PR - Train and Store
+name: Deployment 01D - PR - Train and Store
 
 on:
   workflow_call:
