@@ -177,6 +177,11 @@ jobs:
           # Now you can run any AWS CLI command
           aws s3 ls  # Example command to list S3 buckets
 
+      - name: Test GPU
+        run: |
+          # Now you can run any AWS CLI command
+          nvidia-smi
+
       - name: Login to Amazon ECR
         run: |
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_LOGIN_URI }}
@@ -205,6 +210,7 @@ jobs:
             -e AWS_REGION=${{ secrets.AWS_REGION }} \
             ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest \
             /bin/bash -c "
+              nvidia-smi
               dvc pull -r myremote && \
               dvc repro -f
               python src/backend/torch_local/transfer_mar.py -p dev 
