@@ -9,7 +9,7 @@ on:
 
 jobs:
   trigger-train:
-    uses: ./.github/workflows/01A_Deployment_Train_And_Store.yaml
+    uses: ./.github/workflows/01D_Deployment_PR_Train_And_Store.yaml
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
