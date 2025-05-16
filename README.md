@@ -55,6 +55,17 @@ Code
 - After stress test move from stage to prod 
 - Comment on the commit with cml for stress test results
 - in actions change the workflow comment to PR
+- good one - ecr image May 17, 2025, 00:03:15 (UTC+05.5) - take this and move forward. 
+
+Note: If we build a gpu image from github runner then its throwing below error, so i have prebuilt image
+
+```
+/opt/conda/lib/python3.11/site-packages/torch/cuda/__init__.py:734: UserWarning: Can't initialize NVML
+  warnings.warn("Can't initialize NVML")
+```
+if no thing works then use the model-onnx-server image 
+### Pending for Deployment 3
+- lambda
 
 Docs
 - Architecture diagram
@@ -62,8 +73,14 @@ Docs
 
 Explanation: Deployment 01
 Architecture diagram
+dvc setup and pull - dataset
 start from train and store feature
 then go with optuna taking the lowest loss model and saving it - hyper paramter optimization
+models usage
+onnx model generation
+torch script model for usage
+mar for torch serve usage
+accuracy txt for verification
 then transfering the outputs to s3-dev
 
 Now kubernetes
@@ -71,10 +88,12 @@ setting up of kserve, knative, argocd, promethus, grafana
 show the screenshots on load test
 
 Now deployments workflow
+show the ecr repo and docker files
 on PR generates a model in dev
 compare and post comment in PR
 
 Now kubernetes deployment - github actions 
+show the ecr repo and docker all 3 files
 explain secrets setup - github workflow
 on push to main branch
 train and push to stage
