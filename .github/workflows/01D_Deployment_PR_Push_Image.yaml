@@ -145,7 +145,7 @@ jobs:
         run: |
           # Build development container image and push to ECR
           echo "Building and pushing image to $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-          docker build -t ${{secrets.AWS_ECR_LOGIN_URI}}/${{ secrets.ECR_REPOSITORY_NAME }}:latest .
+          docker build -t ${{secrets.AWS_ECR_LOGIN_URI}}/${{ secrets.ECR_REPOSITORY_NAME }}:latest -f Dockerfile .
           docker push ${{secrets.AWS_ECR_LOGIN_URI}}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
           echo "image=${{secrets.AWS_ECR_LOGIN_URI}}/${{ secrets.ECR_REPOSITORY_NAME }}:latest" >> $GITHUB_OUTPUT
 
