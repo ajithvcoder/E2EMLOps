@@ -212,8 +212,7 @@ jobs:
             ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest \
             /bin/bash -c "
               nvidia-smi
-              pip install torch==2.6.0+cu124
-              pip install torchvision==0.21.0+cu124
+              pip install --force-reinstall --no-cache-dir -r requirements.gpu.txt
               dvc pull -r myremote && \
               dvc repro -f
               python src/backend/torch_local/transfer_mar.py -p dev 
