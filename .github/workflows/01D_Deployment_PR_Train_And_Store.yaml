@@ -159,7 +159,7 @@ jobs:
     timeout-minutes: 20
     
     steps:
-      - uses: iterative/setup-cml@v2
+      # - uses: iterative/setup-cml@v2
 
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -243,17 +243,17 @@ jobs:
 
           echo -e "$report" > report.md
 
-      # - name: Install Node.js and npm
-      #   run: |
-      #     curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-      #     sudo apt-get install -y nodejs
+      - name: Install Node.js and npm
+        run: |
+          curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+          sudo apt-get install -y nodejs
 
       - name: Post Comment with CML
         env:
           REPO_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           CML_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
-          # npm install -g @dvcorg/cml
+          npm install -g @dvcorg/cml
           cml comment create report.md 
           # --pr
 
