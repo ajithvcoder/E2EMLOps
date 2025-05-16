@@ -22,7 +22,7 @@ jobs:
 
 
   trigger-deploy:
-    # needs: trigger-train
+    needs: trigger-train
     uses: ./.github/workflows/01B_Deployment_ArgoCD_And_Promote.yaml
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
