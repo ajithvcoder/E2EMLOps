@@ -204,9 +204,52 @@ jobs:
             /bin/bash -c "
               dvc pull -r myremote && \
               dvc repro -f
+              python src/backend/torch_local/transfer_mar.py -p dev 
             "
         # TODO: Add comment to PR of current trained model score and s3-prod score
-        # Do a small prediction with onnx image and check if its working
+
+      - name: Copy S3 Files to output_prod/
+        run: |
+          mkdir -p output_prod
+          for project in sports vegfruits; do
+            aws s3 cp \
+              s3://mybucket-emlo-mumbai/kserve-ig/${project}-classifier-prod/output_${project}.txt \
+              output_prod/output_${project}.txt
+          done
+
+      - name: Compare Accuracy and Generate Report
+        run: |
+          report="# 📊 Accuracy Comparison Report\n"
+          for project in sports vegfruits; do
+            prod_file="output_prod/output_${project}.txt"
+            local_file="output_${project}.txt"
+
+            prod_acc=$(grep -oP '\d+\.\d+' "$prod_file" || echo "0")
+            local_acc=$(grep -oP '\d+\.\d+' "$local_file" || echo "0")
+
+            comparison="🔁 $project: local=$local_acc vs prod=$prod_acc"
+            if (( $(echo "$local_acc > $prod_acc" | bc -l) )); then
+              comparison+=" ✅ Local is better"
+            elif (( $(echo "$local_acc < $prod_acc" | bc -l) )); then
+              comparison+=" 🔻 Prod is better"
+            else
+              comparison+=" 🔁 Same accuracy"
+            fi
+
+            report+="$comparison\n"
+          done
+
+          echo -e "$report" > report.md
+
+      - name: Install Node.js and npm
+        run: |
+          curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+          sudo apt-get install -y nodejs
+
+      - name: Post Comment with CML
+        run: |
+          npm install -g @dvcorg/cml
+          cml comment create report.md
 
       # un comment after debugging
       # - name: Setup dvc

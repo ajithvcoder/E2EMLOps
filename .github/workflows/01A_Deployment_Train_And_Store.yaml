@@ -204,6 +204,7 @@ jobs:
             /bin/bash -c "
               dvc pull -r myremote && \
               dvc repro -f
+              python src/backend/torch_local/transfer_mar.py -p stage 
             "
 
       # un comment after debugging

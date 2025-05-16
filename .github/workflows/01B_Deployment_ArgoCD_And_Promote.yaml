@@ -650,7 +650,7 @@ jobs:
 
             if [ "$percent" -ge 90 ]; then
               echo "✅ Success rate is above 90%, syncing to production S3..."
-              aws s3 cp --recursive s3://mybucket-emlo-mumbai/kserve-ig/vegfruits-classifier-dev/ s3://mybucket-emlo-mumbai/kserve-ig/vegfruits-classifier-prod/
+              aws s3 cp --recursive s3://mybucket-emlo-mumbai/kserve-ig/vegfruits-classifier-stage/ s3://mybucket-emlo-mumbai/kserve-ig/vegfruits-classifier-prod/
             else
               echo "❌ Success rate is below 90%, skipping promotion."
             fi
@@ -681,7 +681,7 @@ jobs:
 
             if [ "$percent" -ge 90 ]; then
               echo "✅ Success rate is above 90%, syncing to production S3..."
-              aws s3 cp --recursive s3://mybucket-emlo-mumbai/kserve-ig/sports-classifier-dev/ s3://mybucket-emlo-mumbai/kserve-ig/sports-classifier-prod/
+              aws s3 cp --recursive s3://mybucket-emlo-mumbai/kserve-ig/sports-classifier-stage/ s3://mybucket-emlo-mumbai/kserve-ig/sports-classifier-prod/
             else
               echo "❌ Success rate is below 90%, skipping promotion."
             fi
