@@ -5,7 +5,7 @@ log_every_n_steps: 1
 min_epochs: 1 # prevents early stopping
 max_epochs: 3
 
-accelerator: gpu
+accelerator: cuda
 devices: auto
 
 # reload_dataloaders_every_n_epochs: 5

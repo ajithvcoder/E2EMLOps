@@ -198,19 +198,31 @@ jobs:
       #     pip install pyopenssl --upgrade
 
       # 306093656765.dkr.ecr.ap-south-1.amazonaws.com/emlo-session-10-image
-      - name: Run DVC commands in container
-        run: |
-          docker run --gpus all --rm ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest \
-           python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
-
-      - name: Run DVC commands in container
-        run: |
-          docker run --gpus all --rm ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest \
-           python -c "from lightning.pytorch.accelerators import GPUAccelerator; print(GPUAccelerator.auto_device_count())"
+      # - name: Run DVC commands in container
+      #   run: |
+      #     docker run --gpus all --rm ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest \
+      #      python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
 
       - name: Run DVC commands in container
         run: |
           docker run --gpus all \
+            --privileged --ipc=host \
+            -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics \
+            -e NVIDIA_VISIBLE_DEVICES=all \
+            --rm ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest \
+            python -c "
+              import torch;
+              from lightning.pytorch.accelerators import CUDAAccelerator;
+              print(f'PyTorch CUDA: {torch.cuda.is_available()}');
+              print(f'Lightning GPUs: {CUDAAccelerator.auto_device_count()}')
+            "
+
+      - name: Run DVC commands in container
+        run: |
+          docker run --gpus all \
+            --privileged --ipc=host \
+            -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics \
+            -e NVIDIA_VISIBLE_DEVICES=all \
             --name session-18-container \
             --shm-size=8g \
             -v "$(pwd):/workspace" \
