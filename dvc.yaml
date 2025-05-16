@@ -11,10 +11,10 @@ stages:
     deps:
       - src/backend/torch_local/train.py
 
-  transfer_to_s3:
-    cmd: python src/backend/torch_local/transfer_mar.py
-    desc: "Train and veg fruits"
-    deps:
-      - src/backend/torch_local/transfer_mar.py
+  # transfer_to_s3:
+  #   cmd: python src/backend/torch_local/transfer_mar.py
+  #   desc: "Train and veg fruits"
+  #   deps:
+  #     - src/backend/torch_local/transfer_mar.py
       
 

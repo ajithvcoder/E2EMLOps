@@ -177,6 +177,24 @@ def main(cfg: DictConfig):
         model.to_onnx(file_path=onnx_model_file_path, verbose=False, input_sample=imgs, export_params=True, dynamic_axes={'input': {0: 'batch'}},input_names=['input'],output_names=['output'])
         print(f"onnx model saved: {onnx_model_file_path}")
 
+    dataset_name = cfg["data"]["data_dir"].split("/")[-2]
+    print(f"Dataset name - {dataset_name}")
+
+    # Dynamic variables
+    # name = "vegfruits"
+    accuracy = test_metrics[0].get('test/acc_epoch')
+
+    # File path
+    filename = f"output_{dataset_name}.txt"
+
+    # Optional: Delete the file if it exists
+    if os.path.exists(filename):
+        os.remove(filename)
+
+    # Create a new file and write the dynamic content
+    with open(filename, "w") as f:
+        f.write(f"{dataset_name}_accuracy={accuracy}\n")
+
     # Return Float for Hparams ::returning train_loss for optuna to compare 'test/acc_epoch','test/loss_epoch'
     # test_metrics =  [ { 'test/loss_epoch':?? , 'test/acc_epoch': ?? } ]
     return test_metrics[0].get('test/loss_epoch')
