@@ -1,4 +1,4 @@
-name: Deployment 01A - Train and push to S3
+name: Deployment 01A - Main - Train and push to S3
 
 on:
   workflow_call:

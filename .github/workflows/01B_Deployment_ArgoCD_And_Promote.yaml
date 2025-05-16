@@ -1,4 +1,4 @@
-name: Deployment 01B - Argo CD Deploy and Promote
+name: Deployment 01B - Main - Argo CD Deploy and Promote
 
 on:
   workflow_call:
