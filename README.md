@@ -48,16 +48,41 @@ Performance metrics, including latency and stress test results.
 
 ### Pending for Deployment 1
 Code
-- Torchserve not giving proper predictions even for true class, check it - look later - check if its the preprocessing issue
-- Transfer_mar should transfer .pt file and accuracy text file to s3. it can be used for gradio, lambda and accuracy checking
-- Update Workflow to train on pull request and store to s3-dev and compare with prod model accuracy and comment in github actions
+- Torchserve not giving proper predictions even for true class, check it - look later - check if its the preprocessing issue - done
+- Transfer_mar should transfer .pt file and accuracy text file to s3. it can be used for gradio, lambda and accuracy checking - done
+- Update Workflow to train on pull request and store to s3-dev and compare with prod model accuracy and comment in github actions - done
 - Update Workflow to train on push request and store to s3-stage for deployment
 - After stress test move from stage to prod 
 - Comment on the commit with cml for stress test results
+- in actions change the workflow comment to PR
 
 Docs
 - Architecture diagram
 - Screenshots of deployment and video
+
+Explanation: Deployment 01
+Architecture diagram
+start from train and store feature
+then go with optuna taking the lowest loss model and saving it - hyper paramter optimization
+then transfering the outputs to s3-dev
+
+Now kubernetes
+setting up of kserve, knative, argocd, promethus, grafana
+show the screenshots on load test
+
+Now deployments workflow
+on PR generates a model in dev
+compare and post comment in PR
+
+Now kubernetes deployment - github actions 
+explain secrets setup - github workflow
+on push to main branch
+train and push to stage
+setting up of kserve, knative, argocd, 
+performs load test
+after successfull load test promotes model from stage to dev
+comment load test results in commit
+
 
 ### Development Method
 **Download Dataset**

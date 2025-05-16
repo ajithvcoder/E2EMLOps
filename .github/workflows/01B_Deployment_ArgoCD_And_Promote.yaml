@@ -659,6 +659,21 @@ jobs:
           fi
           sleep 30
 
+          # Prepare markdown report
+          echo "### 🧪 Test Report for VegFruits Classifier" > report.md
+          echo "" >> report.md
+          echo "\`\`\`" >> report.md
+          echo "$output" >> report.md
+          echo "\`\`\`" >> report.md
+          echo "" >> report.md
+          echo "**Success Rate:** ${percent}%" >> report.md
+
+          if [ "$percent" -ge 90 ]; then
+            echo "- ✅ Model promoted to production s3 location" >> report.md
+          else
+            echo "- ❌ Model not promoted due to insufficient success rate." >> report.md
+          fi
+
       - name: Model 2 - Run test and promote if >90% success
         working-directory: emlo4-session-18-ajithvcoder-canary-argocd-kserve
         continue-on-error: true
@@ -688,6 +703,35 @@ jobs:
           else
             echo "⚠️ No requests processed, skipping promotion."
           fi
+
+          # Prepare markdown report
+          echo "### 🧪 Test Report for Sports Classifier" > report.md
+          echo "" >> report.md
+          echo "\`\`\`" >> report.md
+          echo "$output" >> report.md
+          echo "\`\`\`" >> report.md
+          echo "" >> report.md
+          echo "**Success Rate:** ${percent}%" >> report.md
+
+          if [ "$percent" -ge 90 ]; then
+            echo "- ✅ Model promoted to production s3 location." >> report.md
+          else
+            echo "- ❌ Model not promoted due to insufficient success rate." >> report.md
+          fi
+
+      - name: Install Node.js and npm
+        run: |
+          curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+          sudo apt-get install -y nodejs
+
+      - name: Post Comment with CML
+        env:
+          REPO_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          CML_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        run: |
+          npm install -g @dvcorg/cml
+          cml comment create report.md 
+
 
       - name: Delete Entire Stack
         continue-on-error: true
