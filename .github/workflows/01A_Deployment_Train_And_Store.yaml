@@ -156,7 +156,7 @@ jobs:
     runs-on: ${{ needs.launch-runner.outputs.label }}
     outputs:
       commit_id: ${{ steps.get_commit_id_ec2.outputs.commit_id }}
-    timeout-minutes: 20
+    timeout-minutes: 45
     
     steps:
       - name: Checkout Code
