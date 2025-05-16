@@ -6,6 +6,8 @@ USER root
 ENV CUDA_HOME=/usr/local/cuda
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 ENV FORCE_CUDA=1  
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
 # Forces CUDA support (for packages like torchvision)
 
 WORKDIR /workspace
