@@ -121,14 +121,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Display the commit ID
-        run: |
-          echo "Latest commit ID is: ${{ needs.build-and-push-ecr-image.outputs.commit_id }}"
+      # - name: Display the commit ID
+      #   run: |
+      #     echo "Latest commit ID is: ${{ needs.build-and-push-ecr-image.outputs.commit_id }}"
 
-      - name: Get latest commit ID
-        id: get_commit_id_runner
-        run: |
-          echo "commit_id=${{ needs.build-and-push-ecr-image.outputs.commit_id }}" >> $GITHUB_OUTPUT
+      # - name: Get latest commit ID
+      #   id: get_commit_id_runner
+      #   run: |
+      #     echo "commit_id=${{ needs.build-and-push-ecr-image.outputs.commit_id }}" >> $GITHUB_OUTPUT
       
       - name: Start EC2 runner
         id: start-ec2-runner
@@ -154,7 +154,7 @@ jobs:
   #----------------------------------------
   do-the-job:
     name: Train Models and Deploy
-    needs: [launch-runner, build-and-push-ecr-image]
+    needs: [launch-runner]
     runs-on: ${{ needs.launch-runner.outputs.label }}
     outputs:
       commit_id: ${{ steps.get_commit_id_ec2.outputs.commit_id }}
