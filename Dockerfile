@@ -6,4 +6,3 @@ RUN pip install -r requirements.gpu.txt
 
 # CMD ["python", "src/train.py"]
 CMD ["tail", "-f", "/dev/null"]
-
