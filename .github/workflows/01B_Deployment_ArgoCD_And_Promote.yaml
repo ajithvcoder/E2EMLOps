@@ -675,8 +675,6 @@ jobs:
           echo "" >> report.md
           echo "**Success Rate:** ${percent}%" >> report.md
 
-          img_url=$(cml publish response_times_vegfruits.png)
-          echo "![VegFruits Results]($img_url)" >> report.md
 
           if [ "$percent" -ge 90 ]; then
             echo "- ✅ Model promoted to production s3 location" >> report.md
@@ -723,8 +721,7 @@ jobs:
           echo "" >> report.md
           echo "**Success Rate:** ${percent}%" >> report.md
 
-          img_url=$(cml publish response_times_sports.png)
-          echo "![Sports Results]($img_url)" >> report.md
+
 
           if [ "$percent" -ge 90 ]; then
             echo "- ✅ Model promoted to production s3 location." >> report.md
@@ -742,6 +739,18 @@ jobs:
           pwd
 
           ls -la
+
+          ls emlo4-session-18-ajithvcoder-canary-argocd-kserve -la
+
+          echo "Veg Fruits" >> report.md
+
+          img_url=$(cml publish emlo4-session-18-ajithvcoder-canary-argocd-kserve/response_times_vegfruits.png)
+          echo "![VegFruits Results]($img_url)" >> report.md
+
+          echo "Sports" >> report.md
+
+          img_url=$(cml publish response_times_sports.png)
+          echo "![Sports Results]($img_url)" >> report.md
 
           cml comment create report.md 
 
