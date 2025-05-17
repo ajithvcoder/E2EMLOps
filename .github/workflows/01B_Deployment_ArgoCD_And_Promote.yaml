@@ -712,7 +712,7 @@ jobs:
           fi
 
           # Prepare markdown report
-          echo "### 🧪 Test Report for Sports Classifier" > report.md
+          echo "### 🧪 Test Report for Sports Classifier" >> report.md
           echo "" >> report.md
           echo "\`\`\`" >> report.md
           echo "$output" >> report.md
