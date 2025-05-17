@@ -12,7 +12,7 @@ cdk --version
 `note`: pwd:= ParentDirectory
 ```bash
 source .venv/bin/activate
-python -m pip install -r aws-reqs.txt
+python -m pip install -r aws-req.txt
 
 cdk init app --language python
 cdk bootstrap
@@ -52,3 +52,11 @@ docker run --rm -it -p 8080:8080 ${CDK_DEFAULT_ACCOUNT}.dkr.ecr.${CDK_DEFAULT_RE
 # push
 docker push ${CDK_DEFAULT_ACCOUNT}.dkr.ecr.${CDK_DEFAULT_REGION}.amazonaws.com/${REPOSITORY_NAME}:latest
 ```
+
+306093656765
+
+
+cdk bootstrap aws://306093656765/ap-south-1
+cdk deploy --require-approval=never
+
+

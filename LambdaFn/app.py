@@ -1,73 +1,237 @@
+import json
 import os
+import platform
+import socket
+from datetime import datetime
+from timeit import default_timer as timer
+from pathlib import Path
 
-from aws_cdk import (
-    App,
-    CfnOutput,
-    Duration,
-    Environment,
-    Stack,
-    aws_lambda,
-)
-from constructs import Construct
+import gradio as gr
+import psutil
+import traceback
+import torch
+import boto3
+from PIL import Image
+from torchvision import transforms
 
+notes = f"System Details:: {platform.system()}-{platform.release()}\nArchitecture: {platform.architecture()[0]}\nSocketName: {socket.getfqdn()}\nHostname:: {socket.gethostname()}\nCPU count:: {psutil.cpu_count(logical=True)}\nBoot time: { datetime.fromtimestamp(psutil.boot_time()).strftime("%Y-%m-%d %H:%M:%S") }\nUPtime:: {str(datetime.now()-datetime.fromtimestamp( psutil.boot_time() )).split('.')[0]}(HH:MM:SS)"
 
-class GradioLambdaFn(Stack):
-    def __init__(self, scope: Construct, id: str, **kwargs) -> None:
-        super().__init__(scope, id, **kwargs)
+torch.set_float32_matmul_precision("medium")
+device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+torch.autocast(enabled=True, dtype="float16", device_type="cuda")
+torch.set_default_device(device=torch.device("cpu"))
 
-        # https://github.com/aws-samples/aws-cdk-examples/blob/main/python/lambda-from-container/app.py
-        ecr_image = aws_lambda.EcrImageCode.from_asset_image(
-            directory=os.path.join(os.getcwd()), file="Dockerfile.lambdafn"
-        )
-
-        # from dotenv import load_dotenv
-        # load_dotenv()  # dockerfile exposed to Secret Keys 😨
-        # DockerImage.from_build(path= os.getcwd()  ,cache_disabled=True,file='Dockerfile.lambdafn',build_args={'AWS_ACCESS_KEY_ID':"",'AWS_SECRET_x1ACCESS_KEY':'','CDK_DEFAULT_ACCOUNT':'',"CDK_DEFAULT_REGION":''})
-
-        # IN CLI,do::  `aws ecr describe-repositories`
-
-        # image_name = ""
-        # ecr_repository = aws_ecr.Repository.from_repository_attributes(self,
-        #         id              = "ECR",
-        #         repository_arn  ='arn:aws:ecr:{0}:{1}:repository/{2}'.format(Aws.REGION, Aws.ACCOUNT_ID, image_name),
-        #         repository_name = image_name
-        #     )
-        # ecr_image = typing.cast("aws_lambda.Code", aws_lambda.EcrImageCode( repository = ecr_repository ))
-
-        lambda_fn = aws_lambda.Function(
-            self,
-            id="lambdaContainerFunction",
-            description="Sample Lambda Container Function",
-            code=ecr_image,
-            handler=aws_lambda.Handler.FROM_IMAGE,
-            runtime=aws_lambda.Runtime.FROM_IMAGE,
-            function_name="emloLambdaFunction",
-            memory_size=3008,
-            timeout=Duration.seconds(60),
-        )
-
-        # Add function URL
-        fn_url = lambda_fn.add_function_url(
-            auth_type=aws_lambda.FunctionUrlAuthType.NONE
-        )
-
-        # Output the function URL
-        CfnOutput(
-            self, id="functionURL", value=fn_url.url, description="Lambda Function URL"
-        )
+###########################################################################################################
+## # Read From S3
+## BUCKET_NAME = 'emlo-project'
+## ARTIFACTS   = ['checkpoints/pths/sports_cpu.pt','checkpoints/pths/vegfruits_cpu.pt','checkpoints/classnames/sports.json','checkpoints/classnames/vegfruits.json']
+## # makedirs
+## os.makedirs(exist_ok=True,name='checkpoints')
+## os.makedirs(exist_ok=True,name=os.path.join('checkpoints','pths'))
+## os.makedirs(exist_ok=True,name=os.path.join('checkpoints','classnames'))
+## # s3 client
+## s3_client   = boto3.client("s3",aws_access_key_id= os.getenv('AWS_ACCESS_KEY_ID'), aws_secret_access_key= os.getenv('AWS_SECRET_ACCESS_KEY'), region_name='ap-south-1')
+## for artifact in ARTIFACTS: s3_client.download_file(BUCKET_NAME,artifact,artifact)
+## print(f"accesskey_id: {os.getenv('AWS_ACCESS_KEY_ID')}")
+###########################################################################################################
 
 
-# Initialize the CDK app
-app = App(analytics_reporting=True, auto_synth=True)
+# Define a no-op flagging callback
+class NoOpFlaggingCallback(gr.FlaggingCallback):
+    def setup(self, components, flagging_dir):
+        pass  # Override setup to prevent directory creation
 
-# Define environment
-env = Environment(
-    account=os.getenv("CDK_DEFAULT_ACCOUNT"),  # AWS.ACCOUNT_ID
-    region=os.getenv("CDK_DEFAULT_REGION", "ap-south-1"),  # AWS.REGION
+    def flag(self, flag_data, flag_option=None, flag_index=None, username=None):
+        pass  # Do nothing when a flag is submitted
+
+
+TEST_TRANSFORMS = transforms.Compose(
+    [
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ]
 )
 
-# Create the stack
-GradioLambdaFn(app, "LambdaContainerFnStack", env=env)
+
+def load_model(name: str, path_dir: str = ".") -> torch.nn.Module:
+    if torch.cuda.is_available():
+        model = torch.jit.load(os.path.join(path_dir, f"{name}.pt"))
+    else:
+        model = torch.jit.load(os.path.join(path_dir, f"{name}_cpu.pt"))
+    print(f"model loaded from {os.path.join(path_dir, f"{name}_cpu.pt")}")
+    return model
 
 
-## app.synth() # make auto_synth=True
+
+def download_folder_from_s3(bucket_name, s3_prefix, local_folder):
+    """
+    Downloads a folder from S3, maintaining the folder structure.
+
+    Parameters:
+    - bucket_name: S3 bucket name
+    - s3_prefix: S3 prefix (acts like a folder), e.g., "models/vegfruits/"
+    - local_folder: Path to local destination folder
+    """
+    s3 = boto3.client('s3')
+    paginator = s3.get_paginator('list_objects_v2')
+    pages = paginator.paginate(Bucket=bucket_name, Prefix=s3_prefix)
+
+    for page in pages:
+        for obj in page.get('Contents', []):
+            s3_key = obj['Key']
+
+            # Skip directory markers
+            if s3_key.endswith('/'):
+                continue
+
+            # Maintain relative path
+            relative_path = os.path.relpath(s3_key, s3_prefix)
+            local_path = os.path.join(local_folder, relative_path)
+
+            # Ensure local directory exists
+            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+
+            print(f"Downloading s3://{bucket_name}/{s3_key} to {local_path}")
+            s3.download_file(bucket_name, s3_key, local_path)
+
+
+    print("Download complete.")
+
+
+
+
+
+@torch.no_grad()
+def spredict_fn(img: Image.Image) -> tuple[dict[str, float], float]:
+    start_time = timer()
+    try:
+        img = TEST_TRANSFORMS(img).to(device)
+        logits = smodel(img.unsqueeze(0))
+        probabilites = torch.softmax(logits, dim=-1)
+        res = {}
+
+        i2ls, pos = torch.topk(probabilites, k=5, dim=-1)
+        for label, conf in zip(
+            [scls2lbs[i.item()] for i in pos[0]],
+            [i.item() for i in i2ls[0]],
+            strict=False,
+        ):
+            res[label] = float(conf)
+
+        pred_time = round(timer() - start_time, 5)
+        return res, pred_time
+    except Exception as e:
+        print("Full traceback:")
+        traceback.print_exc()
+        return {"Error": 0.0}, 0.0
+
+
+@torch.no_grad()
+def vfpredict_fn(img: Image.Image) -> tuple[dict[str, float], float]:
+    start_time = timer()
+    try:
+        img = TEST_TRANSFORMS(img).to(device)
+        logits = vfmodel(img.unsqueeze(0))
+        probabilites = torch.softmax(logits, dim=-1)
+        res = {}
+
+        i2ls, pos = torch.topk(probabilites, k=5, dim=-1)
+
+        for label, conf in zip(
+            [vfcls2lbs[i.item()] for i in pos[0]],
+            [i.item() for i in i2ls[0]],
+            strict=False,
+        ):
+            res[label] = float(conf)
+
+        pred_time = round(timer() - start_time, 5)
+        return res, pred_time
+    except Exception as e:
+        print("Full traceback:")
+        traceback.print_exc()
+        return {"Error": 0.0}, 0.0
+
+if __name__ == "__main__":
+
+    all_projects = ["vegfruits", "sports"]
+
+    for project in all_projects:
+
+        model_store_dir = Path(os.path.join(os.getcwd() , "s3_files" , project))
+        model_store_dir.mkdir(parents=True, exist_ok=True)
+        file_count = sum(
+            1 for entry in os.listdir(model_store_dir)
+            if os.path.isfile(os.path.join(model_store_dir, entry))
+        )
+        if file_count < 1:
+            s3_bucket = "mybucket-emlo-mumbai"
+            s3_key_prefix = f"kserve-ig/{project}-classifier-prod"  # e.g., "models/sports"
+            download_folder_from_s3(s3_bucket, s3_key_prefix, model_store_dir)
+        else:
+            print("Files are present continue")
+
+    smodel = load_model(
+        path_dir=os.path.join(os.getcwd(), "s3_files", "sports", "pths"), name="sports"
+    )
+    vfmodel = load_model(
+        path_dir=os.path.join(os.getcwd(), "s3_files", "vegfruits", "pths"), name="vegfruits"
+    )
+
+    # ' r'./checkpoints/classnames/sports.json'
+    with open(
+        os.path.join(os.getcwd(), "s3_files", "sports", "index_to_name.json")
+    ) as class2idxfile:
+        # scls2lbs: dict = json.load(class2idxfile)
+        scls2lbs = {int(k): v for k, v in json.load(class2idxfile).items()}
+    # r'./checkpoints/classnames/vegfruits.json'
+    with open(
+        os.path.join(os.getcwd(), "s3_files", "vegfruits", "index_to_name.json")
+    ) as class2idxfile:
+        # vfcls2lbs: dict = json.load(class2idxfile)
+        vfcls2lbs = {int(k): v for k, v in json.load(class2idxfile).items()}
+        
+    sports_interface = gr.Interface(
+        fn=spredict_fn,
+        inputs=gr.Image(type="pil"),
+        outputs=[
+            gr.Label(num_top_classes=5, label="predictions"),
+            gr.Number(label="Prediction Time(s)"),
+        ],
+        title="Let's DO it!!",
+        description="If data were a sport, I'll be the champion by now!!",
+        article=f"<h3>Created by EMLO Practicals Group </h3><pre>{notes}</pre>",
+        cache_examples=True,
+        flagging_options=[],
+        flagging_callback=NoOpFlaggingCallback(),
+    )
+
+    vegfruits_interface = gr.Interface(
+        fn=vfpredict_fn,
+        inputs=gr.Image(type="pil"),
+        outputs=[
+            gr.Label(num_top_classes=5, label="predictions"),
+            gr.Number(label="Prediction Time(s)"),
+        ],
+        title="Let's EAT!!",
+        description="I'm non-vegetarian only on weekends!!",
+        article=f"<h3>Created by EMLO Practicals Group </h3><pre>{notes}</pre>",
+        cache_examples=False,
+        flagging_options=[],
+        flagging_callback=NoOpFlaggingCallback(),
+    )
+
+
+    demo = gr.TabbedInterface(
+        tab_names=["Sports", "VegFruits"],
+        interface_list=[sports_interface, vegfruits_interface],
+        analytics_enabled=True,
+    )
+
+    demo.launch(
+        share=False,
+        debug=False,
+        server_name="0.0.0.0",
+        server_port=8080,
+        enable_monitoring=False,
+    )
