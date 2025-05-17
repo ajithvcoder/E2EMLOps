@@ -113,6 +113,9 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Setup installations
+        env:
+          REPO_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          CML_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
           # Assumed git actions checks out the repo and gets inside it
           cd K8SDeploy/eks-cluster-config
@@ -147,6 +150,10 @@ jobs:
           sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
           # rm argocd-linux-amd64
 
+          # node for cml comment
+          curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+          sudo apt-get install -y nodejs
+          npm install -g @dvcorg/cml
 
       - name: Setup Cluster
         continue-on-error: true
@@ -719,19 +726,7 @@ jobs:
             echo "- ❌ Model not promoted due to insufficient success rate." >> report.md
           fi
 
-      - name: Install Node.js and npm
-        run: |
-          curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-          sudo apt-get install -y nodejs
-
-      - name: Post Comment with CML
-        env:
-          REPO_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          CML_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        run: |
-          npm install -g @dvcorg/cml
           cml comment create report.md 
-
 
       - name: Delete Entire Stack
         continue-on-error: true
