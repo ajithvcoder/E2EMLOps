@@ -43,8 +43,11 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
           aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin $CDK_DEFAULT_ACCOUNT.dkr.ecr.$CDK_DEFAULT_REGION.amazonaws.com
-          cdk bootstrap aws://$CDK_DEFAULT_ACCOUNT/$CDK_DEFAULT_REGION
-          cdk deploy --require-approval=never
+          echo "done aws"
+          cdk bootstrap aws://$CDK_DEFAULT_ACCOUNT/$CDK_DEFAULT_REGION --verbose
+          echo "done cdk boot"
+          cdk deploy --require-approval=never --progress=events
+          echo "done cdk deploy"
           sleep 300
 
       - name: Destroy stack
