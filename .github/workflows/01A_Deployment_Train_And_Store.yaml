@@ -81,17 +81,17 @@ jobs:
         run: |
           echo "Latest commit ID is: ${{ steps.get_commit_id.outputs.commit_id }}"
 
-      # - name: Build and Push Docker Image
-      #   id: build-image
-      #   env:
-      #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-      #     IMAGE_TAG: latest
-      #   run: |
-      #     # Build development container image and push to ECR
-      #     echo "Building and pushing image to $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-      #     docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-      #     docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-      #     echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+      - name: Build and Push Docker Image
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: latest
+        run: |
+          # Build development container image and push to ECR
+          echo "Building and pushing image to $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
   #----------------------------------------
   # JOB 2: Launch EC2 instance with GPU for training
@@ -156,7 +156,7 @@ jobs:
     runs-on: ${{ needs.launch-runner.outputs.label }}
     outputs:
       commit_id: ${{ steps.get_commit_id_ec2.outputs.commit_id }}
-    timeout-minutes: 45
+    timeout-minutes: 20
     
     steps:
       - name: Checkout Code
@@ -190,9 +190,21 @@ jobs:
 
       # 306093656765.dkr.ecr.ap-south-1.amazonaws.com/emlo-session-10-image
 
+      - name: Verify GPU Access via torch and lightining
+        run: |
+          docker run --gpus all \
+            --privileged --ipc=host \
+            -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics \
+            -e NVIDIA_VISIBLE_DEVICES=all \
+            --rm ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest \
+            python -c "import torch; from lightning.pytorch.accelerators import CUDAAccelerator; print(f'PyTorch CUDA: {torch.cuda.is_available()}'); print(f'Lightning GPUs: {CUDAAccelerator.auto_device_count()}')"
+
       - name: Run DVC commands in container
         run: |
-          docker run --gpus=all \
+          docker run --gpus all \
+            --privileged --ipc=host \
+            -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics \
+            -e NVIDIA_VISIBLE_DEVICES=all \
             --name session-18-container \
             --shm-size=8g \
             -v "$(pwd):/workspace" \

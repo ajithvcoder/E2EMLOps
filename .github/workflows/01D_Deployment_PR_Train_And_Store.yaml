@@ -1,4 +1,4 @@
-name: Deployment 01E - PR - Train and Store
+name: Deployment 01D - PR - Train and Store
 
 on:
   workflow_call:
@@ -158,7 +158,7 @@ jobs:
     runs-on: ${{ needs.launch-runner.outputs.label }}
     # outputs:
     #   commit_id: ${{ steps.get_commit_id_ec2.outputs.commit_id }}
-    timeout-minutes: 30
+    timeout-minutes: 23
     
     steps:
       # - uses: iterative/setup-cml@v2
