@@ -205,7 +205,7 @@ jobs:
         run: |        
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-8
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-1
 
           kubectl delete -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml --validate=false || true
           sleep 5
@@ -272,7 +272,7 @@ jobs:
         run: |  
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-8
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-1
 
           #### Knative serving
 
@@ -300,7 +300,7 @@ jobs:
           # Pause
           sleep 30
 
-          eksctl create iamserviceaccount --cluster=basic-cluster-8 --name=s3-read-only --attach-policy-arn=arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess  --override-existing-serviceaccounts --region ap-south-1 --approve
+          eksctl create iamserviceaccount --cluster=basic-cluster-1 --name=s3-read-only --attach-policy-arn=arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess  --override-existing-serviceaccounts --region ap-south-1 --approve
 
           # Pause
           sleep 3
@@ -316,7 +316,7 @@ jobs:
       - name: Dashboard, ALB, Charts
         continue-on-error: true
         run: |
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-8
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-1
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
 
@@ -328,7 +328,7 @@ jobs:
           sleep 5
           # ALB
           eksctl create iamserviceaccount \
-              --cluster=basic-cluster-8 \
+              --cluster=basic-cluster-1 \
               --namespace=kube-system \
               --name=aws-load-balancer-controller \
               --attach-policy-arn=arn:aws:iam::306093656765:policy/AWSLoadBalancerControllerIAMPolicy \
@@ -340,14 +340,14 @@ jobs:
           helm repo add eks https://aws.github.io/eks-charts
           helm repo update
           sleep 5
-          helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=basic-cluster-8 --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller
+          helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=basic-cluster-1 --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller
 
       - name: Load URL
         id: get-url
         continue-on-error: true
         run: |
 
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-8
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-1
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
           sleep 20
@@ -372,7 +372,7 @@ jobs:
           export KUBECONFIG=/root/.kube/config
           
           # Update kubeconfig and force it to write to the file
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-8 --kubeconfig $KUBECONFIG || true
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-1 --kubeconfig $KUBECONFIG || true
 
           # Verify the config has the correct server
           kubectl config view --minify | grep server
@@ -388,14 +388,14 @@ jobs:
           done
 
           # Get cluster endpoint
-          CLUSTER_ENDPOINT=$(aws eks describe-cluster --name basic-cluster-8 --region ap-south-1 --query "cluster.endpoint" --output text)
+          CLUSTER_ENDPOINT=$(aws eks describe-cluster --name basic-cluster-1 --region ap-south-1 --query "cluster.endpoint" --output text)
           echo "Cluster endpoint: $CLUSTER_ENDPOINT"
           
           # Update kubeconfig with explicit server
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-8
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-1
           
           # Manually verify/patch the config if needed
-          kubectl config set-cluster basic-cluster-8 --server=$CLUSTER_ENDPOINT
+          kubectl config set-cluster basic-cluster-1 --server=$CLUSTER_ENDPOINT
 
           cat ~/.kube/config || true
 
@@ -437,7 +437,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-8
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-1
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
           sleep 5
@@ -530,7 +530,7 @@ jobs:
         continue-on-error: true
         run: |
           export HOME=/root 
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-8
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-1
           # get inside the dir
           cd K8SDeploy/eks-cluster-config || true
           sleep 5
@@ -597,7 +597,7 @@ jobs:
           export KUBECONFIG=/root/.kube/config
           
           # Update kubeconfig and force it to write to the file
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-8 --kubeconfig $KUBECONFIG || true
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-1 --kubeconfig $KUBECONFIG || true
 
           # Verify the config has the correct server
           kubectl config view --minify | grep server
@@ -613,14 +613,14 @@ jobs:
           done
 
           # Get cluster endpoint
-          CLUSTER_ENDPOINT=$(aws eks describe-cluster --name basic-cluster-8 --region ap-south-1 --query "cluster.endpoint" --output text)
+          CLUSTER_ENDPOINT=$(aws eks describe-cluster --name basic-cluster-1 --region ap-south-1 --query "cluster.endpoint" --output text)
           echo "Cluster endpoint: $CLUSTER_ENDPOINT"
           
           # Update kubeconfig with explicit server
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-8
+          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-1
           
           # Manually verify/patch the config if needed
-          kubectl config set-cluster basic-cluster-8 --server=$CLUSTER_ENDPOINT
+          kubectl config set-cluster basic-cluster-1 --server=$CLUSTER_ENDPOINT
 
           new_url="${{ steps.get-url.outputs.url }}"
           echo "Deploying with model URL: http://${new_url}/v1/models/vegfruits-classifier:predict"
