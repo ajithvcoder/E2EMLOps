@@ -4,13 +4,13 @@ name: Deployment 01 - Main Trigger Workflow
 #   pull_request:
 #     types: [opened, synchronize, reopened]
 
-on:
-  workflow_dispatch:
-
 # on:
-#   push:
-#     branches:
-#       - dev_1
+#   workflow_dispatch:
+
+on:
+  push:
+    branches:
+      - dev_1
 
 jobs:
   # trigger-train:
