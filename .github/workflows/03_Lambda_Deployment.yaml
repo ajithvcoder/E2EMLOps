@@ -26,6 +26,7 @@ jobs:
           python -m pip install --upgrade pip
           # install your Python dependencies here
           pip install -r requirements.lambda.txt
+          pip install -r aws-req.txt
           npm install -g aws-cdk
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@master
@@ -42,6 +43,9 @@ jobs:
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
+          pwd
+          cd LambdaFn 
+          pwd
           aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin $CDK_DEFAULT_ACCOUNT.dkr.ecr.$CDK_DEFAULT_REGION.amazonaws.com
           echo "done aws"
           cdk bootstrap aws://$CDK_DEFAULT_ACCOUNT/$CDK_DEFAULT_REGION --verbose
