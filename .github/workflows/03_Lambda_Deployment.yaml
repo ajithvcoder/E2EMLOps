@@ -46,7 +46,7 @@ jobs:
 
 
 
-      - name: Deploy to AWS Lambda with Onnx model
+      - name: Deploy to AWS Lambda with Gradio
         env:
           CDK_DEFAULT_ACCOUNT: ${{ secrets.CDK_ACCOUNT }}
           CDK_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
