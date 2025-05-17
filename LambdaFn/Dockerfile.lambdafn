@@ -24,6 +24,9 @@ RUN pip3 install --no-cache-dir -r requirements.lambda.txt
 # COPY checkpoints/classnames/ checkpoints/classnames/
 # COPY checkpoints/pths/*_cpu.pt checkpoints/pths/
 
-COPY . .
+COPY app.py .
+COPY s3_files s3_files
+
+
 EXPOSE 8080
-CMD [ "python","app.py" ]
+CMD [ "python3","app.py" ]
