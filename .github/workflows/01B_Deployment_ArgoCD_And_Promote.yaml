@@ -729,6 +729,17 @@ jobs:
             echo "- ❌ Model not promoted due to insufficient success rate." >> report.md
           fi
 
+          cp report.md ../
+
+      - name: CML Comment
+        env:
+          REPO_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          CML_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        run: |
+          pwd
+
+          ls -la
+
           cml comment create report.md 
 
       - name: Delete Entire Stack
