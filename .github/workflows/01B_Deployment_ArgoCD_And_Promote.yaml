@@ -684,6 +684,9 @@ jobs:
       - name: Model 2 - Run test and promote if >90% success
         working-directory: emlo4-session-18-ajithvcoder-canary-argocd-kserve
         continue-on-error: true
+        env:
+          REPO_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          CML_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
           pip install matplotlib
           # Run test and capture output
