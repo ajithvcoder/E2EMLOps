@@ -675,6 +675,9 @@ jobs:
           echo "" >> report.md
           echo "**Success Rate:** ${percent}%" >> report.md
 
+          img_url=$(cml publish response_times_vegfruits.png)
+          echo "![VegFruits Results]($img_url)" >> report.md
+
           if [ "$percent" -ge 90 ]; then
             echo "- ✅ Model promoted to production s3 location" >> report.md
           else
@@ -719,6 +722,9 @@ jobs:
           echo "\`\`\`" >> report.md
           echo "" >> report.md
           echo "**Success Rate:** ${percent}%" >> report.md
+
+          img_url=$(cml publish response_times_sports.png)
+          echo "![Sports Results]($img_url)" >> report.md
 
           if [ "$percent" -ge 90 ]; then
             echo "- ✅ Model promoted to production s3 location." >> report.md
