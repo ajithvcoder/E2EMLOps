@@ -7,23 +7,7 @@
 */kserve/*
 
 # data folder
-*.zip
-*.jpg
-*.JPG
-*.png 
-*.jpeg
-!/assets/sports_class_distribution.png 
-!/assets/sports_image_grid.png
-!/assets/sports_test_confusion_matrix.png  
-!/assets/sports_val_confusion_matrix.png  
-!/assets/sports_train_confusion_matrix.png
-
-
-!/assets/vegfruits_class_distribution.png  
-!/assets/vegfruits_image_grid.png  
-!/assets/vegfruits_train_confusion_matrix.png
-!/assets/vegfruits_test_confusion_matrix.png  
-!/assets/vegfruits_val_confusion_matrix.png  
+data
 
 # data/processed/sports
 # data/processed/vegfruits
