@@ -1,4 +1,4 @@
-name: 03 Lambda Deployment with Gradio
+name: Deployment 03 Lambda Deployment with Gradio
 
 on:
   workflow_dispatch:
