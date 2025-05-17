@@ -66,4 +66,7 @@ jobs:
           sleep 300
 
       - name: Destroy stack
-        run: cdk destroy --force
+        run: |
+          pwd
+          cd LambdaFn 
+          cdk destroy --force
