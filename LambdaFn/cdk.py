@@ -54,11 +54,11 @@ class GradioLambdaFnStack(Stack):
             memory_size=3008,
             timeout=Duration.seconds(60),
             role=lambda_role
-            # environment = {
-            #     AWS_ACCESS_KEY: os.getenv("AWS_ACCESS_KEY"),  # AWS.ACCOUNT_ID
-            #     AWS_SECRET_KEY: os.getenv("AWS_SECRET_KEY"),  # AWS.REGION
-            #     AWS_REGION: os.getenv("AWS_REGION"),  # AWS.ACCOUNT_ID
-            # }
+            environment = {
+                AWS_ACCESS_KEY: os.getenv("AWS_ACCESS_KEY"),  # AWS.ACCOUNT_ID
+                AWS_SECRET_KEY: os.getenv("AWS_SECRET_KEY"),  # AWS.REGION
+                AWS_REGION: os.getenv("AWS_REGION"),  # AWS.ACCOUNT_ID
+            }
         )
 
         # Add function URL
