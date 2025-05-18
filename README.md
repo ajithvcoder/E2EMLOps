@@ -1019,6 +1019,8 @@ CDK package is used to push the image to ECR and lmabda service
 
 *Mostly other stuffs are already done in previous assignments and its combination of everything
 
+"Add test "
+
 ## Technologies Used
 
 [PyTorch Lightning](https://github.com/PyTorchLightning/pytorch-lightning) - a lightweight PyTorch wrapper for high-performance AI research. Think of it as a framework for organizing your PyTorch code.
