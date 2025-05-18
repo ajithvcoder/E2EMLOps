@@ -308,7 +308,7 @@ docker run -it --gpus=all \
             -e AWS_REGION=AWS_REGION \
             emlo-18-train  \
             /bin/bash 
-Add
+Add test comment
 
 ## Main Technologies
 
