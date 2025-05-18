@@ -111,19 +111,19 @@ def load_classnames(name):
         with open(file_path) as f:
             mapping = json.load(f)
         print(f"Class mappings loaded successfully from {file_path}")
+        return mapping
+        # # Debug info
+        # print(f"Raw mapping sample (first 3 items): {list(mapping.items())[:3]}")
         
-        # Debug info
-        print(f"Raw mapping sample (first 3 items): {list(mapping.items())[:3]}")
-        
-        # Convert keys to integers and create reverse mapping
-        try:
-            idx2lbl = {int(v): k for k, v in mapping.items()}
-            print(f"Converted mapping sample (first 3 items): {list(idx2lbl.items())[:3]}")
-            return idx2lbl
-        except Exception as e:
-            print(f"Error converting class mappings: {e}")
-            # Fallback to string keys if int conversion fails
-            return {v: k for k, v in mapping.items()}
+        # # Convert keys to integers and create reverse mapping
+        # try:
+        #     idx2lbl = {int(v): k for k, v in mapping.items()}
+        #     print(f"Converted mapping sample (first 3 items): {list(idx2lbl.items())[:3]}")
+        #     return idx2lbl, mapping
+        # except Exception as e:
+        #     print(f"Error converting class mappings: {e}")
+        #     # Fallback to string keys if int conversion fails
+        #     return {v: k for k, v in mapping.items()}
     except Exception as e:
         print(f"Error loading class mappings for {name}: {e}")
         traceback.print_exc()
@@ -186,8 +186,9 @@ def predict(img, model, idx2lbl):
             idx_item = idx.item()
             print(f"Processing top prediction {i+1}: idx={idx_item}, value={v.item():.4f}")
             
-            if idx_item in idx2lbl:
-                label = idx2lbl[idx_item]
+            if str(idx_item) in idx2lbl:
+                print(f"inside predict - {idx_item}")
+                label = idx2lbl[str(idx_item)]
                 preds[label] = round(v.item(), 4)
                 print(f"Mapped to label: {label}")
             else:
@@ -215,10 +216,9 @@ def main():
     print("Loading models and class mappings")
     smodel = load_model("sports")
     vfmodel = load_model("vegfruits")
-    sidx2lbl = load_classnames("sports")
-    vfidx2lbl = load_classnames("vegfruits")
-    
-    print("Creating prediction functions")
+    sports_map = load_classnames("sports")
+    vegfruits_map = load_classnames("vegfruits")
+
     def sports_fn(img):
         print("\n--- Sports Classification Request ---")
         print(f"Input type: {type(img)}")
@@ -229,7 +229,7 @@ def main():
             print(f"Received boolean: {img}")
             return {"Boolean received (expected image)": 1.0}, 0.0
         try:
-            return predict(img, smodel, sidx2lbl)
+            return predict(img, smodel, sports_map)
         except Exception as e:
             print(f"Error in sports_fn: {e}")
             traceback.print_exc()
@@ -245,7 +245,7 @@ def main():
             print(f"Received boolean: {img}")
             return {"Boolean received (expected image)": 1.0}, 0.0
         try:
-            return predict(img, vfmodel, vfidx2lbl)
+            return predict(img, vfmodel, vegfruits_map)
         except Exception as e:
             print(f"Error in veg_fn: {e}")
             traceback.print_exc()
