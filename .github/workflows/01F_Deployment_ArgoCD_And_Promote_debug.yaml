@@ -168,6 +168,8 @@ jobs:
 
           ls -la
 
+          curl -L https://www.python.org/static/apple-touch-icon-144x144-precomposed.png -o downloaded-image_1.png
+
           echo "Hi this is a test comment 1" >> report.md
 
 
@@ -175,6 +177,9 @@ jobs:
         working-directory: emlo4-session-18-ajithvcoder-canary-argocd-kserve
         continue-on-error: true
         run: |
+
+          curl -L https://www.python.org/static/apple-touch-icon-144x144-precomposed.png -o downloaded-image_2.png
+
           echo "Hi this is a test comment 2" >> report.md
 
           cp report.md ../
@@ -188,6 +193,12 @@ jobs:
 
           ls -la
 
+          img_url=$(cml publish emlo4-session-18-ajithvcoder-canary-argocd-kserve/downloaded-image_1.png)
+          echo "![VegFruits Results]($img_url)" >> report.md
+
+          img_url=$(cml publish emlo4-session-18-ajithvcoder-canary-argocd-kserve/downloaded-image_2.png)
+          echo "![Sports Results]($img_url)" >> report.md
+
           cml comment create report.md 
 
 
@@ -198,7 +209,7 @@ jobs:
           cd K8SDeploy/eks-cluster-config || true
 
           # delete cluster
-          eksctl delete cluster -f eks-cluster.yaml --disable-nodegroup-eviction
+          # eksctl delete cluster -f eks-cluster.yaml --disable-nodegroup-eviction
 
   #----------------------------------------
   # JOB 3: Stop EC2 runner after completion
