@@ -11,22 +11,22 @@ Following are the deployments made in this Capstone assignment
 ### Contents
 
 - [Requirements](#requirements)
-- [Deployments](#development-method)
-    - Dataset
-    - Model Development
-    - DVC setup with AWS S3
-    - Docker command for train and test
+- [Deployments](#Deployments)
+    - [Dataset]
+    - [Model Development]
+    - [DVC setup with AWS S3]
+    - [Docker command for train and test]
     - [Deployment 01 - Kubernetes]
         - [Manual setup]
-            - Architecture Diagram
-            - Installation
-            - Cluster creation and configuration
-            - ArgoCD Deployment
-            - Load testing with promethes and Grafana
+            - [Architecture Diagram]
+            - [Installation]
+            - [Cluster creation and configuration]
+            - [ArgoCD Deployment]
+            - [Load testing with promethes and Grafana]
             - [Deletion Procedure](#deletion-procedure)
         - [Github actions - Automaing Manual setup End to End]
         - [Results Screenshots - D01](#results-screenshots)
-        - Video Link
+        - [Video Link]
     - [Deployment 02]
         - [Results Screenshots - D02](#results-screenshots)
     - [Deployment 03]
@@ -90,8 +90,9 @@ if no thing works then use the model-onnx-server image
 - lambda
 
 todo: (17/05/2025)
-1. add manual screenshot - todo
+1. add manual screenshot - done
 2. check in github actions once with debug yaml and then add response time graph in load test in github actions
+3. Do model comparision for 01D
 3. do video for github actions 01A and 01B explanation and merger with manual video
 4. add github actions screenshot
 5. add architecture diagram
@@ -132,6 +133,8 @@ performs load test
 after successfull load test promotes model from stage to dev
 comment load test results in commit
 
+
+### Deployments
 
 ### Dataset
 
@@ -736,6 +739,8 @@ Load testing Sports model
 
 **Change ALB URLs**
 
+*Note: In github actions deployment its automatically done with github bots.
+
 ![](./assets/deployment-01-kubernetes/manual/snap_chnage_urls.png)
 
 **Argo CD Commit**
@@ -1007,6 +1012,12 @@ CDK package is used to push the image to ECR and lmabda service
 
     ![](./assets/deployment-03-lambda/snap_banana.png)
 
+
+### Learnings
+
+1. Learnt about making automated deployment with github actions 
+
+*Mostly other stuffs are already done in previous assignments and its combination of everything
 
 ## Technologies Used
 
