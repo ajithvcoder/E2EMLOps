@@ -11,29 +11,35 @@ Following are the deployments made in this Capstone assignment
 ### Contents
 
 - [Requirements](#requirements)
-- [Deployments](#Deployments)
-    - [Dataset]
-    - [Model Development]
-    - [DVC setup with AWS S3]
-    - [Docker command for train and test]
-    - [Deployment 01 - Kubernetes]
-        - [Manual setup]
-            - [Architecture Diagram]
-            - [Installation]
-            - [Cluster creation and configuration]
-            - [ArgoCD Deployment]
-            - [Load testing with promethes and Grafana]
+- [Deployments](#deployments)
+    - [Dataset](#dataset)
+    - [Model Development](#model-development)
+    - [DVC setup with AWS S3](#dvc-setup-with-aws-s3)
+    - [Docker command for train and test](#docker-command-for-train-and-test)
+    - [Deployment 01 - Kubernetes](#deployment-01---kubernetes)
+        - [Architecture Diagram](#architecture-diagram)
+        - [Manual setup](#manual-setup)
+            - [D01 Installation](#d01-installation)
+            - [Docker images to ECR](#docker-images-to-ecr)
+            - [Cluster creation and configuration](#cluster-creation-and-configuration)
+            - [ArgoCD Deployment](#argocd-deployment)
+            - [Load testing with promethes and Grafana](#load-testing-with-promethes-and-grafana)
             - [Deletion Procedure](#deletion-procedure)
-        - [Github actions - Automaing Manual setup End to End]
-        - [Results Screenshots - D01](#results-screenshots)
-        - [Video Link]
+            - [Results Screenshots - D01 Manual](#results-screenshots---d01-manual)
+        - [Github actions - Automaing Manual setup End to End - D01](#github-actions---automaing-manual-setup-end-to-end---d01)
+            - [Results Screenshots - 01A and 01B Deployment Main](#results-screenshots---01a-and-01b-deployment-main)
+            - [Github actions workflow Link - D01A-D01B](#github-actions-workflow-link---d01a-d01b)
+            - [Results Screenshots - D01C On PR Request](#results-screenshots---d01c-on-pr-request)
+            - [Github actions workflow Link - D01C](#github-actions-workflow-link---d01c)
+        - [D01 - Deployment - Video Link](#d01---deployment---video-link)
     - [Deployment 02]
         - [Results Screenshots - D02](#results-screenshots)
-    - [Deployment 03]
-        - Installations
-        - Usage
-        - Docker image creation
-        - [Results Screenshots - D03](#results-screenshots)
+    - [Deployment 03 AWS Lambda](#deployment-03---aws-lambda)
+        - [D03 - Installations](#d03---installations)
+        - [D03 - Usage](#d03---installations)
+        - [D03 - Docker Image Creation](#d03---docker-image-creation)
+        - [Results Screenshots - D03](#results-screenshots---d03)
+        - [Github actions workflow Link - D03](#github-actions-workflow-link---d03)
 - [Learnings](#learnings)
 - [Technologies Used]
 
@@ -67,40 +73,6 @@ Kubernetes manifest files and Helm charts.
 - The process of data management, model training, and deployment.
 - Screenshots and explanations of your pipeline in action.
 Performance metrics, including latency and stress test results.
-
-### Pending for Deployment 1
-Code
-- Torchserve not giving proper predictions even for true class, check it - look later - check if its the preprocessing issue - done
-- Transfer_mar should transfer .pt file and accuracy text file to s3. it can be used for gradio, lambda and accuracy checking - done
-- Update Workflow to train on pull request and store to s3-dev and compare with prod model accuracy and comment in github actions - done
-- Update Workflow to train on push request and store to s3-stage for deployment
-- After stress test move from stage to prod 
-- Comment on the commit with cml for stress test results
-- in actions change the workflow comment to PR
-- good one - ecr image May 17, 2025, 00:03:15 (UTC+05.5) - take this and move forward. 
-
-Note: If we build a gpu image from github runner then its throwing below error, so i have prebuilt image
-
-```
-/opt/conda/lib/python3.11/site-packages/torch/cuda/__init__.py:734: UserWarning: Can't initialize NVML
-  warnings.warn("Can't initialize NVML")
-```
-if no thing works then use the model-onnx-server image 
-### Pending for Deployment 3
-- lambda
-
-todo: (17/05/2025)
-1. add manual screenshot - done
-2. check in github actions once with debug yaml and then add response time graph in load test in github actions
-3. Do model comparision for 01D
-3. do video for github actions 01A and 01B explanation and merger with manual video
-4. add github actions screenshot
-5. add architecture diagram
-
-
-Docs
-- Architecture diagram
-- Screenshots of deployment and video
 
 Explanation: Deployment 01
 Architecture diagram
@@ -231,7 +203,7 @@ Make sure `data/processed/sports` and  `data/processed/vegfruits` are only prese
 Set the S3 URL and push
 - `dvc push -r myremote`
 
-### Docker command
+### Docker command for train and test
 
 **Training with GPU**
 
@@ -295,13 +267,16 @@ Note: This repo also has the procedure for ArgoCD deployment repo https://github
 
 It took two months of effort in every weekend to complete this as a group and it may take you atleast 20$ of AWS cost if you are debugging and developing with AWS for this deployment alone. if you just going to test it , it may cost 0.05 to 1 dollar with github actions.
 
+
 ### Architecture Diagram
 
-- TODO
+![](./assets/deployment-01-kubernetes/snap_architecture_01.png)
+
+![](./assets/deployment-01-kubernetes/snap_architecture_02.png)
 
 ### Manual Setup
 
-### Installation
+### D01 Installation
 
 **AWS install**
 
@@ -713,7 +688,28 @@ Load testing Sports model
 
 - `python3 utils/test_load_sports_2.py`
 
-### D01 - Result Screenshots
+### Deletion Procedure
+
+**Delete argocd deployments**
+
+Verify app name
+- `kubectl get app -n argocd`
+
+Delete cascade
+- `kubectl patch app model-deployments  -p '{"metadata": {"finalizers": ["resources-finalizer.argocd.argoproj.io"]}}' --type merge -n argocd`
+- `kubectl delete app model-deployments -n argocd`
+
+**Deletion of cluster**
+
+- `eksctl delete cluster -f eks-cluster.yaml --disable-nodegroup-eviction`
+
+**Wait paitently see all deletion is successfull in aws cloud formation stack page and then close the system because some times
+the deletion gets failed so at backend something would be running and it may cost you high**
+
+**If you are triggering a spot instance manually with `peresistent` type ensure that both the spot request is cancelled manually
+and the AWS instance is terminated finally**
+
+### Results Screenshots - D01 Manual
 
 **Ports establishment**
 
@@ -804,29 +800,9 @@ Vegfruits Model
 
 ![](./assets/deployment-01-kubernetes/manual/response_times_vegfruits.png)
 
-### Deletion Procedure
 
 
-**Delete argocd deployments**
-
-Verify app name
-- `kubectl get app -n argocd`
-
-Delete cascade
-- `kubectl patch app model-deployments  -p '{"metadata": {"finalizers": ["resources-finalizer.argocd.argoproj.io"]}}' --type merge -n argocd`
-- `kubectl delete app model-deployments -n argocd`
-
-**Deletion of cluster**
-
-- `eksctl delete cluster -f eks-cluster.yaml --disable-nodegroup-eviction`
-
-**Wait paitently see all deletion is successfull in aws cloud formation stack page and then close the system because some times
-the deletion gets failed so at backend something would be running and it may cost you high**
-
-**If you are triggering a spot instance manually with `peresistent` type ensure that both the spot request is cancelled manually
-and the AWS instance is terminated finally**
-
-### D01 - Github Actions
+### Github actions - Automaing Manual setup End to End - D01
 
 Two Workflows
 
@@ -873,12 +849,13 @@ There are 3 repos
 
     ![](./assets/deployment-01-kubernetes/github-actions/github_secrets.png)
 
+### Results Screenshots - 01A and 01B Deployment Main
 
 **Main Deployment workflow**
 
 1. On push to main branch triggered
 
-2. Train and push to stage - (screenshot todo)
+2. Train and push to stage
 
 3. Setups argo cd and deploy two models with HPA
 
@@ -904,7 +881,13 @@ There are 3 repos
 
 5. Comment after load test results in tested commit  - (screenshot)
 
-    ![](assets/deployment-01-kubernetes/github-actions/01A/sports_classifier_comments.png)
+    ![](assets/deployment-01-kubernetes/github-actions/01A/snap_graph_results_and_comment.png)
+
+### Github actions workflow Link - D01A-D01B
+
+- [D01 - Kubernetes - Main - Final workflow Result](https://github.com/ajithvcoder/E2EMLOps/actions/runs/15092736500)
+
+### Results Screenshots - D01C On PR Request
 
 **PR Accuracy Test workflow**
 
@@ -930,9 +913,19 @@ There are 3 repos
 
     ![](assets/deployment-01-kubernetes/github-actions/01B/01b_stops_ec2_runner.png)
 
-6. On PR Request generates a comment (screenshot - todo - change)
+6. On PR Request generates a comment
 
-    ![](assets/deployment-01-kubernetes/github-actions/01B/pr_new.png)
+    ![](assets/deployment-01-kubernetes/github-actions/01B/snap_dp01b_comment.png)
+
+    ![](assets/deployment-01-kubernetes/github-actions/01B/snap_acc_comparision.png)
+
+### Github actions workflow Link - D01C
+
+- [D01C - Kubernetes - On PR - Final workflow Result](https://github.com/ajithvcoder/E2EMLOps/actions/runs/15092490112)
+
+### D01 - Deployment - Video Link
+
+- todo
 
 ## Deployment 03 - AWS Lambda
 
@@ -995,7 +988,7 @@ Kindly check "AWS Cloud formations" to verify that everything is deleted
     </debug>
     ```
 
-#### D03 - Results Screenshots
+### Results Screenshots - D03
 
 **Github actions deployment**
 
@@ -1012,12 +1005,23 @@ CDK package is used to push the image to ECR and lmabda service
 
     ![](./assets/deployment-03-lambda/snap_banana.png)
 
+### Github actions workflow Link - D03
+
+- [D03 - Lambda - Final run workflow link](https://github.com/ajithvcoder/E2EMLOps/actions/runs/15085943040)
+
 
 ### Learnings
 
 1. Learnt about making automated deployment with github actions 
 
-*Mostly other stuffs are already done in previous assignments and its combination of everything
+2. If we build a gpu image from github runner then its throwing below error, so i have prebuilt image
+
+```
+/opt/conda/lib/python3.11/site-packages/torch/cuda/__init__.py:734: UserWarning: Can't initialize NVML
+  warnings.warn("Can't initialize NVML")
+```
+
+*Mostly other stuffs are already done in previous assignments and this assignment is a combination of everything.
 
 ## Technologies Used
 
