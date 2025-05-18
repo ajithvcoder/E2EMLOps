@@ -1,4 +1,4 @@
-name: Deployment 01E - PR - Build Image
+name: Z Debug - Deployment 01E - PR - Build Image
 
 on:
   workflow_call:

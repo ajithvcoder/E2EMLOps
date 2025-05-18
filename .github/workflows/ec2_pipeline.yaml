@@ -1,4 +1,4 @@
-name: E2E-CI-CD-Build-DataCollect-Train-Test-Report-Deploy
+name: Z Debug - E2E-CI-CD-Build-DataCollect-Train-Test-Report-Deploy
 on: 
   workflow_dispatch:
 jobs:

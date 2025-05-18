@@ -1,4 +1,4 @@
-name: Deployment 01F - Main - Argo CD Deploy and Promote
+name: Z Debug Deployment 01F - Main - Argo CD Deploy and Promote
 
 # on:
 #   workflow_call:

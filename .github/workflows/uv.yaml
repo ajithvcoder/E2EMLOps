@@ -1,4 +1,4 @@
-name: install-uv
+name: Z Debug - install-uv
 
 on: 
   workflow_dispatch:
