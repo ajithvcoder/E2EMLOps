@@ -90,9 +90,11 @@ if no thing works then use the model-onnx-server image
 - lambda
 
 todo: (17/05/2025)
-add manual screenshot
-add github actions screenshot
-add architecture diagram
+1. add manual screenshot - todo
+2. check in github actions once with debug yaml and then add response time graph in load test in github actions
+3. do video for github actions 01A and 01B explanation and merger with manual video
+4. add github actions screenshot
+5. add architecture diagram
 
 
 Docs
@@ -405,7 +407,12 @@ All above images test in ports like 8080 or 9090 in local and then change to por
 
 **Cluster creation**
 
+Note: Comment out the `publicKeyPath: /root/.ssh/id_rsa.pub` in cluster file if you are doing in your local as it will take the default ssh file 
+from your local.
+
 - `eksctl create cluster -f eks-cluster.yaml`
+
+    ![](./assets/deployment-01-kubernetes/manual/snap_aws_ec2_inst.png)
 
 **Metric server config fix**
 - `kubectl delete -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml --validate=false` 
@@ -473,6 +480,8 @@ Wait and check if everything is up and running
 
 - `kubectl get all -n cert-manager`
 
+![](./assets/deployment-01-kubernetes/manual/cert=manager.png)
+
 **KNative Serving**
 
 - `kubectl apply --server-side -f https://github.com/kserve/kserve/releases/download/v0.14.1/kserve.yaml`
@@ -497,31 +506,36 @@ eksctl create iamserviceaccount --cluster=basic-cluster-1 --name=s3-read-only --
 
 **Dashboard, ALB, Charts**
 
-          aws eks update-kubeconfig --region ap-south-1 --name basic-cluster-1
-          # get inside the dir
-          cd K8SDeploy/eks-cluster-config || true
+Kubernetes Dashboard
 
-          # Kubernetes Dashboard
-          helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
-          helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
-          sleep 3
-          kubectl label namespace default istio-injection=enabled
-          sleep 5
-          # ALB
-          eksctl create iamserviceaccount \
-              --cluster=basic-cluster-1 \
-              --namespace=kube-system \
-              --name=aws-load-balancer-controller \
-              --attach-policy-arn=arn:aws:iam::306093656765:policy/AWSLoadBalancerControllerIAMPolicy \
-              --override-existing-serviceaccounts \
-              --region ap-south-1 \
-              --approve
+```
+helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
 
-          # EKS Charts
-          helm repo add eks https://aws.github.io/eks-charts
-          helm repo update
-          sleep 5
-          helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=basic-cluster-1 --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller
+kubectl label namespace default istio-injection=enabled
+```
+ALB
+```
+eksctl create iamserviceaccount \
+    --cluster=basic-cluster-1 \
+    --namespace=kube-system \
+    --name=aws-load-balancer-controller \
+    --attach-policy-arn=arn:aws:iam::306093656765:policy/AWSLoadBalancerControllerIAMPolicy \
+    --override-existing-serviceaccounts \
+    --region ap-south-1 \
+    --approve
+```
+
+![](./assets/deployment-01-kubernetes/manual/load_balancer_url_istio.png)
+
+
+EKS Charts
+```
+helm repo add eks https://aws.github.io/eks-charts
+helm repo update
+
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=basic-cluster-1 --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller
+```
 
 **Test URL**
 
@@ -547,7 +561,7 @@ kubectl get svc -n istio-system
 
 Delete classifier after testing
 
-- `kubectl delete -f imagenet-classifier.yaml`
+- `kubectl delete -f sports-classifier.yaml`
 
 Till here you can know if everything works fine or not with `python test_kserve_sports_2.py`
 
@@ -555,6 +569,7 @@ Till here you can know if everything works fine or not with `python test_kserve_
 **Prometheus**
 
 ```
+cd other-setup
 git clone --branch release-0.14 https://github.com/kserve/kserve.git
 cd kserve
 kubectl apply -k docs/samples/metrics-and-monitoring/prometheus-operator
@@ -564,14 +579,18 @@ kubectl apply -k docs/samples/metrics-and-monitoring/prometheus
 ```
 
 ```
+cd ..
 kubectl patch configmaps -n knative-serving config-deployment --patch-file qpext_image_patch.yaml
 ```
 
 Set max nodes because if you give more request and max is not set it may scale more
+Optional step
 
 ```
+<debug>
 eksctl scale nodegroup --cluster=basic-cluster --nodes=6 ng-spot-3 --nodes-max=6
 eksctl get nodegroup --cluster basic-cluster --region ap-south-1 --name ng-spot-3
+</debug>
 ```
 
 ```
@@ -653,7 +672,13 @@ secrets:
 - name: s3creds
 ```
 
-- Create the repo before you start and update the repo url in `argo-apps/models.yaml` file
+- Create the argocd repo before you start and update the repo url in `argo-apps/models.yaml` file
+
+Now commit the load balancer url to `emlo4-s18/emlo4-session-18-ajithvcoder-canary-argocd-kserve/fastapi-helm/templates/model-server.cm.yml` file
+
+Change both model-1 and model-2 url
+
+
 
 **Deploy Command**
 
@@ -666,8 +691,8 @@ secrets:
 <debug>
 Delete argocd deployments
 kubectl get app -n argocd
-kubectl patch app model-deployments  -p '{"metadata": {"finalizers": ["resources-finalizer.argocd.argoproj.io"]}}' --type merge -n argocd
-kubectl delete app model-deployments -n argocd
+kubectl patch app fastapi-helm   -p '{"metadata": {"finalizers": ["resources-finalizer.argocd.argoproj.io"]}}' --type merge -n argocd
+kubectl delete app fastapi-helm  -n argocd
 </debug>
 ```
 
@@ -684,6 +709,95 @@ Load testing Veg fruits model
 Load testing Sports model
 
 - `python3 utils/test_load_sports_2.py`
+
+### D01 - Result Screenshots
+
+**Ports establishment**
+
+![](./assets/deployment-01-kubernetes/manual/grafana_port.png)
+
+![](./assets/deployment-01-kubernetes/manual/prometheus_port.png)
+
+![](./assets/deployment-01-kubernetes/manual/argocd_port.png)
+
+**Argo CD UI**
+
+![](./assets/deployment-01-kubernetes/manual/snap_argocd_ui_01.png)
+
+**Pods getting initialized**
+
+![](./assets/deployment-01-kubernetes/manual/snap_pod_initializing.png)
+
+**Load balancers after deployment**
+1. For Model serving
+2. For UI serving
+
+![](./assets/deployment-01-kubernetes/manual/snap_aws_load_balancers.png)
+
+**Change ALB URLs**
+
+![](./assets/deployment-01-kubernetes/manual/snap_chnage_urls.png)
+
+**Argo CD Commit**
+
+![](./assets/deployment-01-kubernetes/manual/snap_argocd_commit.png)
+
+**Pod running**
+
+![](./assets/deployment-01-kubernetes/manual/pod_running.png)
+
+**UI Prediction**
+
+![](./assets/deployment-01-kubernetes/manual/snap_banana_predict.png)
+
+![](./assets/deployment-01-kubernetes/manual/snap_sports_predict.png)
+
+
+**Post request**
+
+![](./assets/deployment-01-kubernetes/manual/snap_model_1_post_request.png)
+
+![](./assets/deployment-01-kubernetes/manual/snap_model_2_post_request.png)
+
+
+
+**Grafana Dashboards**
+
+![](./assets/deployment-01-kubernetes/manual/snap_grafana_dashboard.png)
+
+![](./assets/deployment-01-kubernetes/manual/snap_grafana_dashboard_2.png)
+
+
+**Load test - Scale up and down**
+
+- Metric "Request per second" of 5 is the limit and pod scales up when it goes above 5.
+
+- Min and max pod scaling are 1 to 3
+
+![](./assets/deployment-01-kubernetes/manual/snap_load_test_vegfruits.png)
+
+![](./assets/deployment-01-kubernetes/manual/snap_load_test_sports.png)
+
+![](./assets/deployment-01-kubernetes/manual/snap_100_load.png)
+
+![](./assets/deployment-01-kubernetes/manual/snap_scale_down.png)
+
+![](./assets/deployment-01-kubernetes/manual/snap_scale_up.png)
+
+
+![](./assets/deployment-01-kubernetes/manual/snap_scale_load.png)
+
+![](./assets/deployment-01-kubernetes/manual/snap_newpods_on_load.png)
+
+**Response time - Load test**
+
+Sports Model
+
+![](./assets/deployment-01-kubernetes/manual/response_times_sports.png)
+
+Vegfruits Model
+
+![](./assets/deployment-01-kubernetes/manual/response_times_vegfruits.png)
 
 ### Deletion Procedure
 
@@ -852,6 +966,9 @@ python -m pip install -r aws-req.txt
 - `cdk deploy --require-approval=never`
 - `cdk destroy` - Destroy all resources created
 
+    ![](./assets/deployment-03-lambda/lambda_aws.png)
+
+
 Kindly check "AWS Cloud formations" to verify that everything is deleted
 
 ### D03 - Docker Image Creation
@@ -873,7 +990,7 @@ Kindly check "AWS Cloud formations" to verify that everything is deleted
     </debug>
     ```
 
-### D03 - Results Screenshots
+#### D03 - Results Screenshots
 
 **Github actions deployment**
 
@@ -889,6 +1006,7 @@ CDK package is used to push the image to ECR and lmabda service
 - Vegetable-fruits model prediction
 
     ![](./assets/deployment-03-lambda/snap_banana.png)
+
 
 ## Technologies Used
 
