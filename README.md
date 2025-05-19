@@ -4,7 +4,7 @@
 
 Following are the deployments made in this Capstone assignment
 
-1. Deployment 01 - Kubernetes - [Video Link](https://youtu.be/_WKjwkkomz8) - Train a model with vegetable fruits and sports dataset and perform a argo cd deployment with load testing with github actions. 
+1. Deployment 01 - Kubernetes - [Video Link](https://youtu.be/_WKjwkkomz8) - Train a model with vegetable fruits and sports dataset and perform a argo cd deployment with load testing with github actions. [Workflow Result 1](https://github.com/ajithvcoder/E2EMLOps/commit/4da1e31fb16f76a611d8deed7c684fa09e20df18#commitcomment-157317415) , [Workflow Result 2](https://github.com/ajithvcoder/E2EMLOps/pull/3#issuecomment-2888775354)
 
 2. Deployment 02 - Hugging Face - Perform a hugging face deployment with Gradio with github actions. [Live Link](https://huggingface.co/spaces/ajithvcoder/emlov4-session-18-deployment-hf)
 
@@ -83,26 +83,10 @@ Kubernetes manifest files and Helm charts.
 - Screenshots and explanations of your pipeline in action.
 Performance metrics, including latency and stress test results.
 
+todo
 Explanation: Deployment 01
-Architecture diagram
-dvc setup and pull - dataset
-start from train and store feature
-then go with optuna taking the lowest loss model and saving it - hyper paramter optimization
-models usage
-onnx model generation
-torch script model for usage
-mar for torch serve usage
-accuracy txt for verification
-then transfering the outputs to s3-dev
 
-Now kubernetes
-setting up of kserve, knative, argocd, promethus, grafana
-show the screenshots on load test
 
-Now deployments workflow
-show the ecr repo and docker files
-on PR generates a model in dev
-compare and post comment in PR
 
 Now kubernetes deployment - github actions 
 show the ecr repo and docker all 3 files
@@ -116,6 +100,8 @@ comment load test results in commit
 
 
 ### Deployments
+
+Note: This repo also has the procedure for ArgoCD deployment repo `https://github.com/ajithvcoder/emlo4-session-18-ajithvcoder-canary-argocd-kserve`
 
 ### Dataset
 
@@ -153,10 +139,19 @@ data/processed/vegfruits/
 
 Training a model
 
+We have used timm models `convnext_tiny` and `edgenext_xx_small` for both classifiers. `output_{project}.txt` is generated after every train which helps us in getting models accuracy without evaluating.
+
 **Hparams Search**
 
+- Optuna is used for hyperparameter search. Hydra and pytorch lightining is used for flexiblity.
+- You can refer `hsports.yaml` and `hvegfruits.yaml` for final experimentation.
 
-Torch serve is using onnx model for deployment
+Torch serve is using onnx model for deployment, so following are required
+
+- congig.properties
+- handler file
+- model 
+- class.json file
 
 **Torchserve - Preparation file**
 
@@ -272,7 +267,7 @@ Set the S3 URL and push
 
 **If you are triggering a spot instance manually with peresistent type ensure that both the spot request is cancelled manually and the AWS instance is terminated finally**
 
-Note: This repo also has the procedure for ArgoCD deployment repo https://github.com/ajithvcoder/emlo4-session-18-ajithvcoder-canary-argocd-kserve
+Note: This repo also has the procedure for ArgoCD deployment repo `https://github.com/ajithvcoder/emlo4-session-18-ajithvcoder-canary-argocd-kserve`
 
 It took two months of effort in every weekend to complete this as a group and it may take you atleast 20$ of AWS cost if you are debugging and developing with AWS for this deployment alone. if you just going to test it , it may cost 0.05 to 1 dollar with github actions.
 
@@ -920,6 +915,8 @@ For deployment-2 and deployment-3 we use {project-name}-prod as the model source
 
 ### Results Screenshots - D01C Github actions On PR Request
 
+When a new PR is made this workflow starts to execute. it trains and then pushes the model to s3
+
 **PR Accuracy Test workflow**
 
 ![](./assets/deployment-01-kubernetes/github-actions/01B/pr_new.png)
@@ -959,6 +956,10 @@ For deployment-2 and deployment-3 we use {project-name}-prod as the model source
 ### D01 - Deployment - Video Link
 
 - [Youtube Link](https://youtu.be/_WKjwkkomz8)
+
+- [Workflow Result 1](https://github.com/ajithvcoder/E2EMLOps/commit/4da1e31fb16f76a611d8deed7c684fa09e20df18#commitcomment-157317415)
+
+- [Workflow Result 2](https://github.com/ajithvcoder/E2EMLOps/pull/3#issuecomment-2888775354)
 
 (Kindly run at 2x as its a long video. Results are at end fo the video)
 
