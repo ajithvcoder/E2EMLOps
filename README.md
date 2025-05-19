@@ -1113,12 +1113,13 @@ CDK package is used to push the image to ECR and lmabda service
 
 1. Learnt about making automated deployment with github actions 
 
-2. If we build a gpu image from github runner then its throwing below error, so i have prebuilt image
+2. If we build a gpu image from github runner then its throwing below error, so i added new privalges to use host gpu.
 
 ```
 /opt/conda/lib/python3.11/site-packages/torch/cuda/__init__.py:734: UserWarning: Can't initialize NVML
   warnings.warn("Can't initialize NVML")
 ```
+3. I learnt a lot about Github actions, Kubernetes services in past few assignments and i learnt that its good to spent some money for AWS services, similar to how we pay fees for courses. We get some courses for 20k, 50k but we hesitate to spend 500 ro 1000 rupees for doing some practical work, it has helped me. I spent 10k on all 18 assignments, it has helped me in handling kubernetes issues in my office.
 
 *Mostly other stuffs are already done in previous assignments and this assignment is a combination of everything.
 
