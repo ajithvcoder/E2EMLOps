@@ -1,16 +1,22 @@
 ## EMLOV4 Session-18 Capstone Assignment 
 
-**Summary**
+### Deliverables for Capstone
 
 Following are the deployments made in this Capstone assignment
 
-1. Deployment 01 - Kubernetes - Train a model with vegetable fruits and sports dataset and perform a argo cd deployment with load testing with github actions.
-2. Deployment 02 - Hugging Face - Perform a hugging face deployment with Gradio with github actions.
-3. Deployment 03 - AWS Lambda - Perform a AWS Lambda deployment with Gradio with github actions.
+1. Deployment 01 - Kubernetes - [Video Link](https://youtu.be/_WKjwkkomz8) - Train a model with vegetable fruits and sports dataset and perform a argo cd deployment with load testing with github actions. 
+
+2. Deployment 02 - Hugging Face - Perform a hugging face deployment with Gradio with github actions. [Live Link](https://huggingface.co/spaces/ajithvcoder/emlov4-session-18-deployment-hf)
+
+3. Deployment 03 - AWS Lambda - [Live Link](https://vdtzkarjl35k5oemfpepbfjft40zokmh.lambda-url.ap-south-1.on.aws/) - Perform a AWS Lambda deployment with Gradio with github actions. 
+
+Note: Video link and 2 live urls are available above which are Capstone assignment deliverables.
+(Kindly run at 2x as its a long video. Results are at end fo the video)
 
 ### Contents
 
 - [Requirements](#requirements)
+- [Deliverables](#deliverables)
 - [Deployments](#deployments)
     - [Dataset](#dataset)
     - [Model Development](#model-development)
@@ -31,18 +37,20 @@ Following are the deployments made in this Capstone assignment
             - [Github actions workflow Link - D01A-D01B](#github-actions-workflow-link---d01a-d01b)
             - [Results Screenshots - D01C Github actions On PR Request](#results-screenshots---d01c-github-actions-on-pr-request)
             - [Github actions workflow Link - D01C](#github-actions-workflow-link---d01c)
-        - [D01 - Deployment - Video Link](#d01---deployment---video-link)
+        - [Video Link D01 - Deployment](#d01---deployment---video-link)
     - [Deployment 02 - Hugging face](#deployment-02---hugging-face)
         - [Steps for hugging face deployment](#steps-for-hugging-face-deployment) 
         - [Results Screenshots - D02 - HuggingFace](#results-screenshots---d02---huggingface)
+        - [Live Link - D02](#live-link---d02)
     - [Deployment 03 AWS Lambda](#deployment-03---aws-lambda)
         - [D03 - Installations](#d03---installations)
         - [D03 - Usage](#d03---installations)
         - [D03 - Docker Image Creation](#d03---docker-image-creation)
         - [Results Screenshots - D03](#results-screenshots---d03)
         - [Github actions workflow Link - D03](#github-actions-workflow-link---d03)
+        - [Live Link - D03](#live-link---d03)
 - [Learnings](#learnings)
-- [Technologies Used]
+- [Technologies Used](#technologies-used)
 
 ### Requirements
 1. On Pull Request to the main branch:
@@ -950,7 +958,9 @@ For deployment-2 and deployment-3 we use {project-name}-prod as the model source
 
 ### D01 - Deployment - Video Link
 
-- todo
+- [Youtube Link](https://youtu.be/_WKjwkkomz8)
+
+(Kindly run at 2x as its a long video. Results are at end fo the video)
 
 ### Deployment 02 - Hugging face
 
@@ -1000,6 +1010,10 @@ Hugging face space repo
 - [Deployment 02 Github Actions Hugging Face Workflow Link](https://github.com/ajithvcoder/E2EMLOps/blob/dev_1/.github/workflows/02_Deployment_Hugging_Face_Gradio.yaml)
 
     ![](./assets/deployment-02-huggingface/snap_deployment_02.png)
+
+### Live Link - D02
+
+[Live Deployed D02 Hugging faceLink](https://huggingface.co/spaces/ajithvcoder/emlov4-session-18-deployment-hf)
 
 ## Deployment 03 - AWS Lambda
 
@@ -1090,6 +1104,9 @@ CDK package is used to push the image to ECR and lmabda service
 
 - [D03 - Lambda - Final run workflow link](https://github.com/ajithvcoder/E2EMLOps/actions/runs/15085943040)
 
+### Live Link - D03
+
+[Live Deployed AWS Lambda Link](https://vdtzkarjl35k5oemfpepbfjft40zokmh.lambda-url.ap-south-1.on.aws/)
 
 ### Learnings
 
