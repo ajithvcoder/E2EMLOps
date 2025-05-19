@@ -25,11 +25,11 @@ Following are the deployments made in this Capstone assignment
             - [ArgoCD Deployment](#argocd-deployment)
             - [Load testing with promethes and Grafana](#load-testing-with-promethes-and-grafana)
             - [Deletion Procedure](#deletion-procedure)
-            - [Results Screenshots - D01 Manual](#results-screenshots---d01-manual)
+            - [Results Screenshots - D01 Argo CD Manual Deployment](#results-screenshots---d01-argo-cd-manual-deployment)
         - [Github actions - Automaing Manual setup End to End - D01](#github-actions---automaing-manual-setup-end-to-end---d01)
-            - [Results Screenshots - 01A and 01B Deployment Main](#results-screenshots---01a-and-01b-deployment-main)
+            - [Results Screenshots - Github Actions 01A and 01B Deployment Main](#results-screenshots---github-actions-01a-and-01b-deployment-main)
             - [Github actions workflow Link - D01A-D01B](#github-actions-workflow-link---d01a-d01b)
-            - [Results Screenshots - D01C On PR Request](#results-screenshots---d01c-on-pr-request)
+            - [Results Screenshots - D01C Github actions On PR Request](#results-screenshots---d01c-github-actions-on-pr-request)
             - [Github actions workflow Link - D01C](#github-actions-workflow-link---d01c)
         - [D01 - Deployment - Video Link](#d01---deployment---video-link)
     - [Deployment 02]
@@ -374,11 +374,18 @@ Name: ui-server
 
 All above images test in ports like 8080 or 9090 in local and then change to port 80, else its hard to debug in local.
 
+
 **Use below commands to debug web server and ui server**
 
 - `docker run -it --network my_network -v ./emlo4-s18/E2EMLOps/K8SDeploy/src/web-server:/opt/src -p9090:9090 web-server bash`
 
 - `uvicorn server:app --host 0.0.0.0 --port 9090`
+
+**ECR Repo** 
+
+- Push all images to ECR Repo
+
+    ![](./assets/deployment-01-kubernetes/ecr_repos.png)
 
 
 ### Cluster creation and configuration
@@ -709,7 +716,7 @@ the deletion gets failed so at backend something would be running and it may cos
 **If you are triggering a spot instance manually with `peresistent` type ensure that both the spot request is cancelled manually
 and the AWS instance is terminated finally**
 
-### Results Screenshots - D01 Manual
+### Results Screenshots - D01 Argo CD Manual Deployment
 
 **Ports establishment**
 
@@ -775,16 +782,25 @@ and the AWS instance is terminated finally**
 
 - Min and max pod scaling are 1 to 3
 
+![](./assets/deployment-01-kubernetes/snap_inference_service.png)
+
+Load request to model 1
+
 ![](./assets/deployment-01-kubernetes/manual/snap_load_test_vegfruits.png)
 
 ![](./assets/deployment-01-kubernetes/manual/snap_load_test_sports.png)
 
 ![](./assets/deployment-01-kubernetes/manual/snap_100_load.png)
 
-![](./assets/deployment-01-kubernetes/manual/snap_scale_down.png)
+Scale up
 
 ![](./assets/deployment-01-kubernetes/manual/snap_scale_up.png)
 
+Scale down
+
+![](./assets/deployment-01-kubernetes/manual/snap_scale_down.png)
+
+Load request to model 2
 
 ![](./assets/deployment-01-kubernetes/manual/snap_scale_load.png)
 
@@ -836,9 +852,6 @@ Two Workflows
 
     c. Checks if the model is acheving greater than the accuracy than `s3-prod`, if so makes a comment
 
-ECR Repo 
-
-![](./assets/deployment-01-kubernetes/ecr_repos.png)
 
 There are 3 repos
 1. a18/ui-server - Next JS UI
@@ -849,13 +862,18 @@ There are 3 repos
 
     ![](./assets/deployment-01-kubernetes/github-actions/github_secrets.png)
 
-### Results Screenshots - 01A and 01B Deployment Main
+*Note: After training for deployment 1 we save either at {project_name}-dev, {project_name}-stage, {project_name}-prod depending on the use case in s3 bucket.
+For deployment-2 and deployment-3 we use {project-name}-prod as the model source for deployement
+
+### Results Screenshots - Github Actions 01A and 01B Deployment Main
 
 **Main Deployment workflow**
 
 1. On push to main branch triggered
 
-2. Train and push to stage
+2. Train the model and push to s3 `stage` folder
+
+    ![](./assets/deployment-01-kubernetes/snap_prod_s3.png)
 
 3. Setups argo cd and deploy two models with HPA
 
@@ -869,7 +887,11 @@ There are 3 repos
 
     ![](assets/deployment-01-kubernetes/github-actions/01A/snap_probabilty_2.png)
 
-4. After successfull load test promotes model from stage to dev  - (screenshot)
+4. Deploys the argo cd app
+
+    ![](./assets/deployment-01-kubernetes/github-actions/01A/snap_githubactions_deploy.png)
+
+4. After successfull load test promotes model from s3-stage to s3-dev  - (screenshot)
 
     Model 1
 
@@ -887,9 +909,11 @@ There are 3 repos
 
 - [D01 - Kubernetes - Main - Final workflow Result](https://github.com/ajithvcoder/E2EMLOps/actions/runs/15092736500)
 
-### Results Screenshots - D01C On PR Request
+### Results Screenshots - D01C Github actions On PR Request
 
 **PR Accuracy Test workflow**
+
+![](./assets/deployment-01-kubernetes/github-actions/01B/pr_new.png)
 
 1. Overall actions workflow
 
@@ -927,11 +951,67 @@ There are 3 repos
 
 - todo
 
+### Deployment 02 - Hugging face
+
+*Note: After training for deployment 1 we save either at {project_name}-dev, {project_name}-stage, {project_name}-prod depending on the use case in s3 bucket.
+For deployment-2 and deployment-3 we use {project-name}-prod as the model source for deployement.
+
+![](./assets/deployment-01-kubernetes/snap_prod_s3.png)
+
+
+Files are in `gradio_deploy/` folder
+
+### Steps for hugging face deployment
+
+1. S3 folder where model is present
+2. Develop a gradio app, 
+3. create a space in hugging face
+4. create write token as through github actions we need to push model and code to hugging faces
+5. Add the AWS secrets to Hugging face space.
+ 
+Set hugging face credentials in the enviornment
+
+Now push the files to hugging face space by `huggingface_hub` package.
+
+Local testing
+
+- `python app.py`
+
+app.py is a gradio app that takes model files from s3 and then uses it for prediction
+
+Hugging face space repo
+
+- [emlov4-session-18-deployment-hf](https://huggingface.co/spaces/ajithvcoder/emlov4-session-18-deployment-hf)
+
+### Results Screenshots - D02
+
+**Hugging face Repo Deployments**
+
+- Deployment on hugging face environemnt
+
+    ![](./assets/deployment-02-huggingface/snap_hf_deploy.png)
+
+    ![](./assets/deployment-02-huggingface/snap_hf_deploy_2.png)
+
+
+**Github actions deployment**
+
+- [Deployment 02 Github Actions Hugging Face Workflow Link](https://github.com/ajithvcoder/E2EMLOps/blob/dev_1/.github/workflows/02_Deployment_Hugging_Face_Gradio.yaml)
+
+    ![](./assets/deployment-02-huggingface/snap_deployment_02.png)
+
 ## Deployment 03 - AWS Lambda
 
 Note: Kindly check `AWS Cloud formations` to verify that everything is deleted
 
+*Note: After training for deployment 1 we save either at {project_name}-dev, {project_name}-stage, {project_name}-prod depending on the use case in s3 bucket.
+For deployment-2 and deployment-3 we use {project-name}-prod as the model source for deployement.
+
+![](./assets/deployment-01-kubernetes/snap_prod_s3.png)
+
 **Explanation**: First local deployment of Gradio is done for sports classifier and veg fruits classifier and tested with docker. Prodcution grade models are fetched from s3 and kept in "s3_files" folder for both deplpyment. Further they are added to docker container and CDK package is used to push the image to ECR and create lambda service stack.
+
+Files are in `LambdaFn/` folder
 
 ### D03 - Installations
 
@@ -1039,11 +1119,11 @@ CDK package is used to push the image to ECR and lmabda service
 
 [FastAPI|Gradio](https://www.gradio.app/) - A Python library for building simple, interactive web interfaces for machine learning models and APIs.
 
-[Nextjs]() - Frontend FrameWork
+[Nextjs](https://nextjs.org/) - Frontend FrameWork
 
-[K8s|KNative|Kserve|Istio|ArgoCD]() - AWS Kubernets and ArgoCD 
+[K8s](https://kubernetes.io/)|[KNative](https://knative.dev/docs/)|[Kserve](https://kserve.github.io/website/latest/)|[Istio](https://istio.io/)|[ArgoCD](https://argo-cd.readthedocs.io/en/stable/) - AWS Kubernets and ArgoCD 
 
-[Prometheus|Grafana] - observability
+[Prometheus](https://prometheus.io/)|[Grafana](https://grafana.com/) - observability
 
 
 [![license](https://img.shields.io/badge/License-MIT-green.svg?labelColor=gray)](https://github.com/ashleve/lightning-hydra-template#license)
