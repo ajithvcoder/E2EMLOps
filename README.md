@@ -32,8 +32,9 @@ Following are the deployments made in this Capstone assignment
             - [Results Screenshots - D01C Github actions On PR Request](#results-screenshots---d01c-github-actions-on-pr-request)
             - [Github actions workflow Link - D01C](#github-actions-workflow-link---d01c)
         - [D01 - Deployment - Video Link](#d01---deployment---video-link)
-    - [Deployment 02]
-        - [Results Screenshots - D02](#results-screenshots)
+    - [Deployment 02 - Hugging face](#deployment-02---hugging-face)
+        - [Steps for hugging face deployment](#steps-for-hugging-face-deployment) 
+        - [Results Screenshots - D02 - HuggingFace](#results-screenshots---d02---huggingface)
     - [Deployment 03 AWS Lambda](#deployment-03---aws-lambda)
         - [D03 - Installations](#d03---installations)
         - [D03 - Usage](#d03---installations)
@@ -983,7 +984,7 @@ Hugging face space repo
 
 - [emlov4-session-18-deployment-hf](https://huggingface.co/spaces/ajithvcoder/emlov4-session-18-deployment-hf)
 
-### Results Screenshots - D02
+### Results Screenshots - D02 - HuggingFace
 
 **Hugging face Repo Deployments**
 
