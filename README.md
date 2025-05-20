@@ -1147,3 +1147,14 @@ CDK package is used to push the image to ECR and lmabda service
 
 
 [![license](https://img.shields.io/badge/License-MIT-green.svg?labelColor=gray)](https://github.com/ashleve/lightning-hydra-template#license)
+
+
+**Group Members**
+
+1. Ajith Kumar V (myself)
+
+2. Hema M
+
+3. Muthukamalan
+
+4. Abhiya gupta
